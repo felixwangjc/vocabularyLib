@@ -26,7 +26,7 @@ struct ImageImportView: View {
                 } header: {
                     Text("选择图片来源")
                 } footer: {
-                    Text("支持照片、截图及常见图片文件；识别结果支持缩放和长按 2 秒添加单词。")
+                    Text("支持照片、截图及常见图片文件；识别前可裁剪有效区域，结果支持缩放和长按 2 秒添加单词。")
                 }
                 .disabled(isLoading)
                 if isLoading { ProgressView("正在读取图片…") }

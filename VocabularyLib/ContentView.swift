@@ -165,6 +165,7 @@ struct ContentView: View {
                 OCRReviewView(image: capturedImage, addWord: addRecognizedWord)
             }
         }
+        .task { presentOCRTestFixtureIfNeeded() }
     }
 
     private var tabs: some View {
@@ -264,6 +265,23 @@ struct ContentView: View {
             alert = AppAlert(title: "添加失败", message: error.localizedDescription)
             return .failed
         }
+    }
+
+    private func presentOCRTestFixtureIfNeeded() {
+        #if DEBUG
+        guard ProcessInfo.processInfo.environment["OCR_CROP_UI_TEST"] == "1", capturedImage == nil else { return }
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 900, height: 1200))
+        capturedImage = renderer.image { context in
+            UIColor.systemBackground.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 900, height: 1200))
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 64, weight: .bold),
+                .foregroundColor: UIColor.label
+            ]
+            NSString(string: "apple book cloud\nlearn every day")
+                .draw(in: CGRect(x: 70, y: 180, width: 760, height: 300), withAttributes: attributes)
+        }
+        #endif
     }
 }
 

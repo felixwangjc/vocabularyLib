@@ -14,6 +14,7 @@ schemes:
         VocabularyLib: all
     test:
       targets:
+        - VocabularyLibTests
         - VocabularyLibUITests
 targets:
   VocabularyLib:
@@ -72,3 +73,13 @@ targets:
       base:
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: VocabularyLib
+  VocabularyLibTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: VocabularyLibTests
+    dependencies:
+      - target: VocabularyLib
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES

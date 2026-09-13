@@ -36,7 +36,7 @@ struct CameraPicker: UIViewControllerRepresentable {
 }
 
 struct OCRReviewView: View {
-    let image: UIImage
+    let originalImage: UIImage
     let addWord: (String) async -> WordAdditionResult
     @Environment(\.dismiss) private var dismiss
     @State private var words: [RecognizedWord] = []
@@ -47,18 +47,28 @@ struct OCRReviewView: View {
     @State private var selectedWordID: UUID?
     @State private var dictionaryTerm: DictionaryTerm?
     @State private var isRecognizing = true
+    @State private var workingImage: UIImage
+    @State private var showsCropper = false
+    @State private var isCropped = false
+    @State private var recognitionVersion = 0
+
+    init(image: UIImage, addWord: @escaping (String) async -> WordAdditionResult) {
+        originalImage = image
+        self.addWord = addWord
+        _workingImage = State(initialValue: image)
+    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 if isRecognizing {
                     Spacer()
-                    ProgressView("正在识别照片中的英文单词…")
+                    ProgressView("正在识别图片中的英文单词…")
                     Spacer()
                 } else if words.isEmpty {
-                    ContentUnavailableView("没有识别到英文单词", systemImage: "text.viewfinder", description: Text("请拍摄清晰、文字朝上的英文内容。"))
+                    ContentUnavailableView("没有识别到英文单词", systemImage: "text.viewfinder", description: Text("请裁剪到清晰、文字朝上的英文内容后重试。"))
                 } else {
-                    OCRPhotoOverlay(image: image, selectedWord: words.first { $0.id == selectedWordID })
+                    OCRPhotoOverlay(image: workingImage, selectedWord: words.first { $0.id == selectedWordID })
                         .padding(.horizontal, 20)
                         .padding(.top, 14)
 
@@ -98,18 +108,51 @@ struct OCRReviewView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("关闭") { dismiss() } }
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button("裁剪识别区域", systemImage: "crop") { showsCropper = true }
+                        Button("恢复原图", systemImage: "arrow.uturn.backward") {
+                            applyImage(originalImage, cropped: false)
+                        }
+                        .disabled(!isCropped)
+                    } label: {
+                        Label("裁剪", systemImage: "crop")
+                    }
+                    .accessibilityIdentifier("ocrCropMenu")
+                }
                 ToolbarItem(placement: .confirmationAction) { Button("完成") { dismiss() } }
             }
         }
-        .task { await recognizeText() }
+        .task(id: recognitionVersion) { await recognizeText(version: recognitionVersion) }
+        .fullScreenCover(isPresented: $showsCropper) {
+            ImageCropView(image: workingImage) { cropped in
+                applyImage(cropped, cropped: true)
+            }
+        }
         .sheet(item: $dictionaryTerm) { term in SystemDictionaryView(word: term.word) }
     }
 
     @MainActor
-    private func recognizeText() async {
+    private func recognizeText(version: Int) async {
         isRecognizing = true
-        words = await TextRecognizer.recognizeWords(in: image)
+        let result = await TextRecognizer.recognizeWords(in: workingImage)
+        guard version == recognitionVersion, !Task.isCancelled else { return }
+        words = result
         isRecognizing = false
+    }
+
+    @MainActor
+    private func applyImage(_ image: UIImage, cropped: Bool) {
+        workingImage = image
+        isCropped = cropped
+        words = []
+        selectedWordID = nil
+        addedWordIDs = []
+        addingWordIDs = []
+        duplicateWordIDs = []
+        failedWordIDs = []
+        isRecognizing = true
+        recognitionVersion += 1
     }
 
     private func add(_ word: RecognizedWord) {

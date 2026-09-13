@@ -13,6 +13,7 @@
 		1BAEE0B66ABD7FB3081FCDEA /* VocabularyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC2976BA282E0BAD7F351C3D /* VocabularyStore.swift */; };
 		1D92A5523814EBC208520B84 /* WordNet-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 643F5C985C57BFFAE42A0FA8 /* WordNet-LICENSE.txt */; };
 		2763CD9BFCCF097EAEF0A210 /* examples.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 271C52E06E7705B96CD7E6D5 /* examples.sqlite */; };
+		2790C6761BFA3D638923961F /* ImageCropModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 104CD2C74E1F2CF8AA6B1886 /* ImageCropModelTests.swift */; };
 		2EFCC82C87E380A1C5E80CC9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE7B97906EA7B431E45F094 /* SettingsView.swift */; };
 		35F83C35CFE5BF8EB4016D8B /* ImageImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B041A1E13F774721F3E845C9 /* ImageImportView.swift */; };
 		4274A38F5C30CD6B7E26523C /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84EC065A67B754EC6DC7398C /* AppTheme.swift */; };
@@ -26,15 +27,24 @@
 		93A5C582F636471B62610B1D /* ecdict.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 18D64F86CB0B68847B86FADD /* ecdict.sqlite */; };
 		9C66B2AF9883A9A5AFBF3BA6 /* ImageRecognitionMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C098FBF9EEBD4B5BCC74CF4 /* ImageRecognitionMenu.swift */; };
 		B7E2435FF435BB3254955D30 /* SystemDictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C643278806337B91B54A357 /* SystemDictionaryView.swift */; };
+		E49E134EA3501FE5D5918564 /* ImageCropFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 712799A5E1AE3E184AE892E4 /* ImageCropFlowTests.swift */; };
 		E59B8DDC49C643B362B206BE /* ReviewRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2FFD3ABAE63A141E6E88789 /* ReviewRecord.swift */; };
 		EC2F171A3980E06AB36C256B /* CameraOCRView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF88EAE05D27302CAF399C3 /* CameraOCRView.swift */; };
 		ECDF8D399CF44592D81944AD /* ECDICT-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9671717D6934447E5DA3D42E /* ECDICT-LICENSE.txt */; };
 		EE9DA8213943379D1C9D1BA4 /* VocabularyLibApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866F284DA37E19F8B7361F2A /* VocabularyLibApp.swift */; };
 		EFB67F78222EEE4BA0FA2B1C /* ReviewSwipeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D2DBAD5D8116454DEBEE4D /* ReviewSwipeTests.swift */; };
+		F9AD4B710648A97E8762247D /* ImageCropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A113BE91E53BB155549D6F /* ImageCropView.swift */; };
 		FB6E7BE1C3AB61D2B25546DA /* ImageMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E330B2C215CD79C4656EDA1A /* ImageMenuTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1C728769DA022A8846D5D741 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4DFFBDE59E90A3E68CF5D1FD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CCF543D1A5478703D680849A;
+			remoteInfo = VocabularyLib;
+		};
 		5BF62528DFE6F0737617F716 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4DFFBDE59E90A3E68CF5D1FD /* Project object */;
@@ -66,8 +76,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		104CD2C74E1F2CF8AA6B1886 /* ImageCropModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropModelTests.swift; sourceTree = "<group>"; };
 		1117F4EF39B882545267FB3E /* VocabularyLibUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VocabularyLibUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		16A113BE91E53BB155549D6F /* ImageCropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropView.swift; sourceTree = "<group>"; };
 		18D64F86CB0B68847B86FADD /* ecdict.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = ecdict.sqlite; sourceTree = "<group>"; };
+		1B3A0BA1107CFA007A7E39A6 /* VocabularyLibTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VocabularyLibTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		271C52E06E7705B96CD7E6D5 /* examples.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = examples.sqlite; sourceTree = "<group>"; };
 		2FF24EA4A373750732FBBB95 /* WordEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordEntry.swift; sourceTree = "<group>"; };
 		3DB5DF297EFFE5DB149784C0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -75,6 +88,7 @@
 		4C098FBF9EEBD4B5BCC74CF4 /* ImageRecognitionMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRecognitionMenu.swift; sourceTree = "<group>"; };
 		5C643278806337B91B54A357 /* SystemDictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictionaryView.swift; sourceTree = "<group>"; };
 		643F5C985C57BFFAE42A0FA8 /* WordNet-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "WordNet-LICENSE.txt"; sourceTree = "<group>"; };
+		712799A5E1AE3E184AE892E4 /* ImageCropFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropFlowTests.swift; sourceTree = "<group>"; };
 		753782D6BB84FB28BEABFF58 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		7C79EA5DE15DA1F2D732E4DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		84EC065A67B754EC6DC7398C /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
@@ -121,6 +135,7 @@
 		22431D8D8133B8138DBD2DB4 /* VocabularyLibUITests */ = {
 			isa = PBXGroup;
 			children = (
+				712799A5E1AE3E184AE892E4 /* ImageCropFlowTests.swift */,
 				E330B2C215CD79C4656EDA1A /* ImageMenuTests.swift */,
 				97D2DBAD5D8116454DEBEE4D /* ReviewSwipeTests.swift */,
 			);
@@ -151,6 +166,7 @@
 			isa = PBXGroup;
 			children = (
 				CBE7EF9461CCD1B91E0BDE46 /* VocabularyLib */,
+				DF4991462287CF66C22D2247 /* VocabularyLibTests */,
 				22431D8D8133B8138DBD2DB4 /* VocabularyLibUITests */,
 				128B9304919BE4AAED6E8ACD /* VocabularyWidget */,
 				DCA6FF12F774017E13B30A8C /* Frameworks */,
@@ -163,6 +179,7 @@
 			children = (
 				84EC065A67B754EC6DC7398C /* AppTheme.swift */,
 				AAF88EAE05D27302CAF399C3 /* CameraOCRView.swift */,
+				16A113BE91E53BB155549D6F /* ImageCropView.swift */,
 				B041A1E13F774721F3E845C9 /* ImageImportView.swift */,
 				4C098FBF9EEBD4B5BCC74CF4 /* ImageRecognitionMenu.swift */,
 				B86ADDEA3A22A32C13C1699F /* ReviewView.swift */,
@@ -185,6 +202,7 @@
 			isa = PBXGroup;
 			children = (
 				CC6942062259F5E6DE27AB55 /* VocabularyLib.app */,
+				1B3A0BA1107CFA007A7E39A6 /* VocabularyLibTests.xctest */,
 				1117F4EF39B882545267FB3E /* VocabularyLibUITests.xctest */,
 				D2721EDC22CF80F6A5E669D8 /* VocabularyWidget.appex */,
 			);
@@ -215,6 +233,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		DF4991462287CF66C22D2247 /* VocabularyLibTests */ = {
+			isa = PBXGroup;
+			children = (
+				104CD2C74E1F2CF8AA6B1886 /* ImageCropModelTests.swift */,
+			);
+			path = VocabularyLibTests;
+			sourceTree = "<group>";
+		};
 		FDF748C645010F1545676439 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -227,6 +253,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		C7082FB228B6BDE559D7C3D9 /* VocabularyLibTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 68FCFD6E44A1F4FF706C1A36 /* Build configuration list for PBXNativeTarget "VocabularyLibTests" */;
+			buildPhases = (
+				F1F4E2E0EDC413D714C2FA42 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				75D918774842E99F9DE671B9 /* PBXTargetDependency */,
+			);
+			name = VocabularyLibTests;
+			packageProductDependencies = (
+			);
+			productName = VocabularyLibTests;
+			productReference = 1B3A0BA1107CFA007A7E39A6 /* VocabularyLibTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		CCF543D1A5478703D680849A /* VocabularyLib */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F82E20E70CEA67F523E2DDA1 /* Build configuration list for PBXNativeTarget "VocabularyLib" */;
@@ -322,6 +366,7 @@
 				CCF543D1A5478703D680849A /* VocabularyLib */,
 				FADDF0F52420C60CE7BBF61F /* VocabularyWidget */,
 				DE05DCD20FECCA3FC54D40CC /* VocabularyLibUITests */,
+				C7082FB228B6BDE559D7C3D9 /* VocabularyLibTests */,
 			);
 		};
 /* End PBXProject section */
@@ -347,6 +392,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E49E134EA3501FE5D5918564 /* ImageCropFlowTests.swift in Sources */,
 				FB6E7BE1C3AB61D2B25546DA /* ImageMenuTests.swift in Sources */,
 				EFB67F78222EEE4BA0FA2B1C /* ReviewSwipeTests.swift in Sources */,
 			);
@@ -360,6 +406,7 @@
 				EC2F171A3980E06AB36C256B /* CameraOCRView.swift in Sources */,
 				4492434DC567788A1345F2C8 /* ContentView.swift in Sources */,
 				54428A05FF49B4A25B90341E /* DictionaryService.swift in Sources */,
+				F9AD4B710648A97E8762247D /* ImageCropView.swift in Sources */,
 				35F83C35CFE5BF8EB4016D8B /* ImageImportView.swift in Sources */,
 				9C66B2AF9883A9A5AFBF3BA6 /* ImageRecognitionMenu.swift in Sources */,
 				46AAC3A0381FEBDF5E98A5CB /* LocalDictionary.swift in Sources */,
@@ -381,9 +428,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F1F4E2E0EDC413D714C2FA42 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2790C6761BFA3D638923961F /* ImageCropModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		75D918774842E99F9DE671B9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CCF543D1A5478703D680849A /* VocabularyLib */;
+			targetProxy = 1C728769DA022A8846D5D741 /* PBXContainerItemProxy */;
+		};
 		8098D9B0E7271AFB2F999188 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = CCF543D1A5478703D680849A /* VocabularyLib */;
@@ -397,6 +457,23 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		04E4DFC4A39E5D08C4B7F380 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vocabularylib.VocabularyLibTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VocabularyLib.app/VocabularyLib";
+			};
+			name = Debug;
+		};
 		1422BAF4022E20CB3C917297 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -484,6 +561,23 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
+		};
+		5C6986056AB0D225F0D4911D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vocabularylib.VocabularyLibTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VocabularyLib.app/VocabularyLib";
+			};
+			name = Release;
 		};
 		5D248C598A1DFBC2A0A40360 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -646,6 +740,15 @@
 			buildConfigurations = (
 				BDC8C30672B9D7B4506CBDF0 /* Debug */,
 				CC925C6790AABC45BF6046AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		68FCFD6E44A1F4FF706C1A36 /* Build configuration list for PBXNativeTarget "VocabularyLibTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				04E4DFC4A39E5D08C4B7F380 /* Debug */,
+				5C6986056AB0D225F0D4911D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

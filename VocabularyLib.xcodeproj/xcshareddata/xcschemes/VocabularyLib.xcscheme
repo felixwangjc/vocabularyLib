@@ -44,6 +44,17 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C7082FB228B6BDE559D7C3D9"
+               BuildableName = "VocabularyLibTests.xctest"
+               BlueprintName = "VocabularyLibTests"
+               ReferencedContainer = "container:VocabularyLib.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "DE05DCD20FECCA3FC54D40CC"
                BuildableName = "VocabularyLibUITests.xctest"
                BlueprintName = "VocabularyLibUITests"
