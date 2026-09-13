@@ -89,7 +89,8 @@ struct ContentView: View {
                             Image(systemName: "text.viewfinder")
                                 .font(.body)
                                 .frame(width: 44, height: 44)
-                                .background(.regularMaterial, in: Circle())
+                                .background(AppTheme.accentSoft, in: Circle())
+                                .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(AppTheme.accent)
@@ -189,6 +190,8 @@ struct ContentView: View {
                 .tag(AppTab.settings)
         }
         .tint(AppTheme.accent)
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarBackground(AppTheme.surface.opacity(0.96), for: .tabBar)
     }
 
     private func isIPadLandscape(in size: CGSize) -> Bool {
@@ -281,29 +284,34 @@ private struct InputWordView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 28) {
                 if showsPageTitle {
                     Text("输入单词")
-                        .font(.largeTitle.bold())
+                        .font(.system(.largeTitle, design: .rounded, weight: .black))
                         .padding(.horizontal, 32)
                         .padding(.top, 4)
                 }
                 EntryComposer(word: $word, isLoading: isLoading, submit: submit)
                 VStack(alignment: .leading, spacing: 14) {
-                    Label("添加后会自动完成", systemImage: "sparkles")
-                        .font(.headline)
+                    HStack {
+                        Label("智能补充", systemImage: "sparkles")
+                            .font(.title3.bold())
+                        Spacer()
+                        Text("添加后自动完成")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     ViewThatFits(in: .horizontal) {
                         HStack(spacing: 10) {
-                            FeaturePill(title: "中英文释义", icon: "character.book.closed")
-                            FeaturePill(title: "标准发音", icon: "speaker.wave.2")
-                            FeaturePill(title: "例句", icon: "text.quote")
+                            FeaturePill(title: "中英文释义", icon: "character.book.closed", color: AppTheme.mint)
+                            FeaturePill(title: "标准发音", icon: "speaker.wave.2", color: AppTheme.sky)
+                            FeaturePill(title: "例句", icon: "text.quote", color: AppTheme.lemon)
                         }
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 10) {
-                                FeaturePill(title: "中英文释义", icon: "character.book.closed")
-                                FeaturePill(title: "标准发音", icon: "speaker.wave.2")
+                                FeaturePill(title: "中英文释义", icon: "character.book.closed", color: AppTheme.mint)
+                                FeaturePill(title: "标准发音", icon: "speaker.wave.2", color: AppTheme.sky)
                             }
-                            FeaturePill(title: "例句", icon: "text.quote")
+                            FeaturePill(title: "例句", icon: "text.quote", color: AppTheme.lemon)
                         }
                     }
                 }
@@ -315,7 +323,7 @@ private struct InputWordView: View {
             .padding(.vertical, 24)
             .frame(maxWidth: .infinity)
         }
-        .background(AppTheme.canvas)
+        .learningScreenBackground()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -335,7 +343,7 @@ private struct WordBookView: View {
 
     var body: some View {
         List {
-            Section("我的单词本 · \(store.entries.count)") {
+            Section {
                 ForEach(store.entries) { entry in
                     Button { selectedEntry = entry } label: {
                         WordRow(entry: entry)
@@ -346,11 +354,18 @@ private struct WordBookView: View {
                     .listRowSeparator(.hidden)
                 }
                 .onDelete(perform: store.delete)
+            } header: {
+                HStack {
+                    Text("我的单词本").font(.title3.bold()).foregroundStyle(.primary)
+                    Spacer()
+                    Text("\(store.entries.count) 个单词").foregroundStyle(AppTheme.accent)
+                }
+                .textCase(nil)
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(AppTheme.canvas)
+        .learningScreenBackground()
         .overlay {
             if store.entries.isEmpty {
                 ContentUnavailableView("还没有单词", systemImage: "text.book.closed", description: Text("在“输入单词”中记录你的第一个英文单词。"))
@@ -367,7 +382,7 @@ private struct LandscapeWordSidebar: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 5) {
                 Text("单词本")
-                    .font(.title.bold())
+                    .font(.system(.title, design: .rounded, weight: .black))
                 Text("已记录 \(store.entries.count) 个单词")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -395,7 +410,7 @@ private struct LandscapeWordSidebar: View {
                 .scrollContentBackground(.hidden)
             }
         }
-        .background(AppTheme.canvas)
+        .learningScreenBackground()
     }
 }
 
@@ -406,13 +421,19 @@ private struct EntryComposer: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Image(systemName: "character.book.closed.fill")
-                .font(.title)
-                .foregroundStyle(AppTheme.accent)
-                .padding(16)
-                .background(AppTheme.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 18))
+            HStack(alignment: .top) {
+                Image(systemName: "character.book.closed.fill")
+                    .font(.title)
+                    .foregroundStyle(AppTheme.accent)
+                    .padding(16)
+                    .background(AppTheme.peach, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                Spacer()
+                Image(systemName: "sparkles")
+                    .font(.title2).foregroundStyle(AppTheme.accent.opacity(0.65))
+            }
             Text("每一个新词，\n都是一点进步。")
-                .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                .font(.system(.largeTitle, design: .rounded, weight: .black))
+            + Text(" ✦").foregroundStyle(AppTheme.accent)
             Text("本地查词，即刻收藏。例句会在联网时自动补充。")
                 .foregroundStyle(.secondary)
             ViewThatFits(in: .horizontal) {
@@ -440,7 +461,8 @@ private struct EntryComposer: View {
                     .autocorrectionDisabled()
                     .font(.title3)
                     .padding(14)
-                    .background(AppTheme.canvas, in: RoundedRectangle(cornerRadius: 14))
+                    .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.primary.opacity(0.08)))
                     .onSubmit(submit)
     }
 
@@ -449,6 +471,7 @@ private struct EntryComposer: View {
             Label("加入", systemImage: "plus.circle.fill")
         }
         .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.capsule)
         .controlSize(.large)
         .disabled(isLoading)
     }
@@ -457,13 +480,14 @@ private struct EntryComposer: View {
 private struct FeaturePill: View {
     let title: String
     let icon: String
+    let color: Color
     var body: some View {
         Label(title, systemImage: icon)
             .font(.subheadline)
-            .foregroundStyle(AppTheme.accent)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 10)
-            .background(AppTheme.accent.opacity(0.08), in: Capsule())
+            .foregroundStyle(.primary)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .background(color, in: Capsule())
     }
 }
 
@@ -482,13 +506,17 @@ private struct WordRow: View {
         }
         return colorScheme == .dark ? Color(red: 0.48, green: 0.78, blue: 0.62) : Color(red: 0.18, green: 0.48, blue: 0.32)
     }
+    private var rowColor: Color {
+        let value = Int(entry.word.unicodeScalars.first?.value ?? 0)
+        return AppTheme.pastel(value)
+    }
     var body: some View {
         HStack(spacing: 12) {
             Text(String(entry.word.prefix(1)).uppercased())
                 .font(.system(.title3, design: .rounded, weight: .semibold))
-                .foregroundStyle(statusColor)
+                .foregroundStyle(AppTheme.accent)
                 .frame(width: 40, height: 44)
-                .background(statusColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                .background(AppTheme.surface.opacity(0.7), in: RoundedRectangle(cornerRadius: 12))
             VStack(alignment: .leading, spacing: 5) {
                 Text(entry.word).font(.headline)
                 Text(entry.chineseDefinition).lineLimit(1).font(.subheadline).foregroundStyle(.secondary)
@@ -502,18 +530,15 @@ private struct WordRow: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
-            RoundedRectangle(cornerRadius: 18)
-                .fill(AppTheme.surface)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(statusColor.opacity(colorScheme == .dark ? 0.06 : 0.08))
-                }
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(rowColor)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
-                .strokeBorder(statusColor.opacity(0.18), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(statusColor.opacity(colorScheme == .dark ? 0.34 : 0.22), lineWidth: 1)
                 .allowsHitTesting(false)
         }
+        .shadow(color: .black.opacity(0.045), radius: 8, y: 4)
         .contentShape(Rectangle())
     }
 }
@@ -535,10 +560,15 @@ struct WordCard: View {
                 Spacer()
                 Button(action: playPronunciation) {
                     Image(systemName: "speaker.wave.2.fill").font(.title2)
+                        .frame(width: 44, height: 44)
                 }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(AppTheme.accent)
+                    .background(AppTheme.peach, in: Circle())
                     .accessibilityLabel("播放发音")
             }
+            .padding(18)
+            .background(AppTheme.lemon.opacity(0.65), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             if let message = pronunciation.message {
                 Text(message).font(.caption).foregroundStyle(.secondary)
             }
@@ -561,6 +591,8 @@ struct WordCard: View {
                         Text("词库暂无此词性的英文解释").font(.caption).foregroundStyle(.secondary)
                     }
                 }
+                .padding(16)
+                .background(AppTheme.pastel(Int(meaning.partOfSpeech.unicodeScalars.first?.value ?? 0)), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             if currentEntry.needsExample {
@@ -627,7 +659,7 @@ private struct CardSection: View {
     let tint: Color
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
-            Label(title, systemImage: "circle.fill").font(.caption.weight(.semibold)).foregroundStyle(tint)
+            Label(title, systemImage: "sparkle").font(.caption.weight(.semibold)).foregroundStyle(tint)
             Text(content).font(.body).fixedSize(horizontal: false, vertical: true)
         }
     }

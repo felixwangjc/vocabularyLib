@@ -5,18 +5,35 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section {
+                HStack(spacing: 16) {
+                    Image(systemName: "gearshape.2.fill")
+                        .font(.title)
+                        .foregroundStyle(AppTheme.accent)
+                        .frame(width: 56, height: 56)
+                        .background(AppTheme.surface.opacity(0.75), in: RoundedRectangle(cornerRadius: 18))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Vocabulary Lib").font(.title3.bold())
+                        Text("本地、快速、专注学习").font(.subheadline).foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+            .listRowBackground(AppTheme.peach)
             Section("本地存储") {
                 Label("单词与复习进度保存在此设备", systemImage: "internaldrive")
                 LabeledContent("单词数量", value: "\(store.entries.count)")
                 Text("当前为本地版，不进行设备间同步。已有单词和复习记录继续保留；卸载 App 会移除本地数据。")
                     .font(.footnote).foregroundStyle(.secondary)
             }
+            .listRowBackground(AppTheme.mint)
             Section("词典与识别") {
                 Text("网络查词失败时，可打开系统词典查看释义。首次使用请前往系统“设置 → 通用 → 词典”，选择并下载英语或英汉词典。下载后可离线查阅。App 无法代替你下载或指定系统词库，也不能提取系统释义保存。")
                     .font(.footnote).foregroundStyle(.secondary)
                 Text("优先使用 ECDICT 本地词典查询释义。例句优先读取本地 WordNet 用法示例，未收录时后台联网补充；部分示例为短语，且不保证对应当前展示的首个义项。失败不影响单词保存。发音使用系统英文朗读，照片文字识别在设备上完成。")
                     .font(.footnote).foregroundStyle(.secondary)
             }
+            .listRowBackground(AppTheme.sky)
             Section("开源词库") {
                 NavigationLink("WordNet 用法示例许可") {
                     ScrollView {
@@ -36,7 +53,10 @@ struct SettingsView: View {
                     .navigationTitle("ECDICT 许可")
                 }
             }
+            .listRowBackground(AppTheme.lemon)
         }
         .navigationTitle("设置")
+        .scrollContentBackground(.hidden)
+        .learningScreenBackground()
     }
 }

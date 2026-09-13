@@ -12,6 +12,8 @@ struct ImageMenuButton: UIViewRepresentable {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "text.viewfinder"), for: .normal)
         button.tintColor = UIColor(AppTheme.accent)
+        button.backgroundColor = UIColor(AppTheme.accentSoft)
+        button.layer.cornerRadius = 16
         button.accessibilityLabel = "图片识词"
         button.accessibilityIdentifier = "imageRecognitionTrigger"
         button.accessibilityHint = "展开拍照、粘贴和导入图片菜单"
@@ -21,6 +23,8 @@ struct ImageMenuButton: UIViewRepresentable {
 
     func updateUIView(_ button: UIButton, context: Context) {
         context.coordinator.tapped = tapped
+        button.tintColor = UIColor(AppTheme.accent)
+        button.backgroundColor = UIColor(AppTheme.accentSoft)
     }
 
     final class Coordinator: NSObject {
@@ -58,6 +62,8 @@ struct ImageRecognitionMenu: View {
                 .font(.system(size: 23, weight: .medium))
             .foregroundStyle(AppTheme.accent)
             .frame(width: 48, height: 48)
+            .background(AppTheme.surface, in: Circle())
+            .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

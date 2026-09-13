@@ -17,7 +17,7 @@ struct ReviewView: View {
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .padding(16)
-            .studyCard()
+            .background(AppTheme.peach, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             .accessibilityIdentifier("reviewSummary")
             .id("reviewTop")
 
@@ -27,7 +27,7 @@ struct ReviewView: View {
                 .foregroundStyle(AppTheme.accent)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(AppTheme.accent.opacity(0.1), in: Capsule())
+                .background(AppTheme.accentSoft, in: Capsule())
               ReviewSwipeCard(entry: entry, remainingCount: due.count) { remembered in
                 store.review(entry, remembered: remembered)
               }
@@ -61,7 +61,7 @@ struct ReviewView: View {
       }
     }
     .navigationTitle("每日复习")
-    .background(AppTheme.canvas)
+    .learningScreenBackground()
   }
 }
 
@@ -83,7 +83,7 @@ private struct ReviewSwipeCard: View {
   private var threshold: CGFloat { min(140, max(80, cardWidth * 0.28)) }
   private var offset: CGFloat { committing ? exitOffset : drag.translation }
   private var progress: Double { min(1, abs(offset) / threshold) }
-  private var feedbackColor: Color { offset < 0 ? .green : .orange }
+  private var feedbackColor: Color { offset < 0 ? .green : AppTheme.accent }
 
   var body: some View {
     VStack(spacing: 22) {
@@ -92,7 +92,7 @@ private struct ReviewSwipeCard: View {
           .foregroundStyle(.green)
         Spacer(minLength: 8)
         Label("右滑 · 再次复习", systemImage: "arrow.right")
-          .foregroundStyle(.orange)
+          .foregroundStyle(AppTheme.accent)
       }
       .font(.subheadline.weight(.medium))
       .accessibilityElement(children: .combine)
@@ -179,7 +179,8 @@ private struct ReviewSwipeCard: View {
           .font(.subheadline).foregroundStyle(.secondary)
           .multilineTextAlignment(.center)
         Button("查看释义与发音") { revealed = true }
-          .buttonStyle(.borderedProminent)
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.capsule)
           .controlSize(.large)
       }
       .padding(28)
@@ -195,7 +196,7 @@ private struct ReviewSwipeCard: View {
       Label("记住了", systemImage: "arrow.left.circle.fill")
         .padding(.vertical, 6)
     }
-    .buttonStyle(.bordered).tint(.green)
+    .buttonStyle(.borderedProminent).buttonBorderShape(.capsule).tint(.green)
     .accessibilityIdentifier("reviewRemembered")
     Button {
       submit(remembered: false)
@@ -203,7 +204,7 @@ private struct ReviewSwipeCard: View {
       Label("再次复习", systemImage: "arrow.right.circle.fill")
         .padding(.vertical, 6)
     }
-    .buttonStyle(.bordered).tint(.orange)
+    .buttonStyle(.borderedProminent).buttonBorderShape(.capsule).tint(AppTheme.accent)
     .accessibilityIdentifier("reviewAgain")
   }
 
