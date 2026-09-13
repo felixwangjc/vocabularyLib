@@ -1,0 +1,39 @@
+# macOS and Xcode personal state
+.DS_Store
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Generated builds and diagnostics
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+*.dSYM/
+*.dSYM.zip
+*.xcresult/
+*.log
+
+# Local backups; bundled production dictionaries remain versioned
+*.bak
+*.bak.*
+*.sqlite-shm
+*.sqlite-wal
+
+# Credentials, signing material, and machine-specific configuration
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.pem
+*.key
+*.mobileprovision
+*.provisionprofile
+Secrets.xcconfig
+
+# Python conversion caches
+__pycache__/
+*.py[cod]
+.venv/
