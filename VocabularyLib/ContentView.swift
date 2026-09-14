@@ -21,9 +21,11 @@ struct ContentView: View {
     @State private var capturedImage: UIImage?
     @State private var showsReview = false
     @State private var showsSettings = false
+    @State private var showsBadges = false
     @State private var dictionaryTerm: DictionaryTerm?
     @State private var isPastingImage = false
     @State private var showsImageMenu = false
+    @State private var showsCheckInToast = true
     @State private var imageButtonFrame = CGRect.zero
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -38,8 +40,9 @@ struct ContentView: View {
                     NavigationStack {
                         InputWordView(word: $word, isLoading: store.isLoading, showsPageTitle: true, submit: addWord, toggleImageMenu: { setImageMenu(!showsImageMenu) }, reportButtonFrame: { imageButtonFrame = $0 })
                             .toolbar {
-                                ToolbarItem(placement: .topBarLeading) {
+                                ToolbarItemGroup(placement: .topBarLeading) {
                                     Button("每日复习", systemImage: "brain.head.profile") { showsReview = true }
+                                    Button("徽章馆", systemImage: "medal.fill") { showsBadges = true }
                                 }
                                 ToolbarItem(placement: .topBarTrailing) {
                                     Button("设置", systemImage: "gearshape") { showsSettings = true }
@@ -58,6 +61,7 @@ struct ContentView: View {
             capturedImage = nil
             isShowingCamera = false
             showsSettings = false
+            showsBadges = false
             showsReview = url.host == "review" && isIPadLandscape(in: proxy.size)
             selectedTab = url.host == "review" ? .review : .addWord
         }
@@ -135,6 +139,15 @@ struct ContentView: View {
                 }
             }
         }
+        .sheet(isPresented: $showsBadges) {
+            NavigationStack {
+                BadgeView().toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("完成") { showsBadges = false }
+                    }
+                }
+            }
+        }
         .alert(item: $alert) { alert in
             if let word = alert.word {
                 return Alert(title: Text(alert.title), message: Text(alert.message), primaryButton: .default(Text("查看系统词典")) { dictionaryTerm = DictionaryTerm(word: word) }, secondaryButton: .cancel(Text("取消")))
@@ -166,6 +179,24 @@ struct ContentView: View {
             }
         }
         .task { presentOCRTestFixtureIfNeeded() }
+        .task {
+            guard store.latestCheckInOutcome?.didCheckIn == true else { return }
+            try? await Task.sleep(for: .seconds(3.5))
+            withAnimation(.easeOut(duration: 0.25)) { showsCheckInToast = false }
+        }
+        .overlay(alignment: .top) {
+            if showsCheckInToast, let outcome = store.latestCheckInOutcome, outcome.didCheckIn {
+                Label("今日打卡 +\(outcome.awardedPoints) 积分 · 连续 \(outcome.streak) 天", systemImage: "checkmark.seal.fill")
+                    .font(.subheadline.bold()).foregroundStyle(.green)
+                    .padding(.horizontal, 16).padding(.vertical, 11)
+                    .background(.regularMaterial, in: Capsule())
+                    .overlay { Capsule().strokeBorder(Color.green.opacity(0.22)) }
+                    .shadow(color: .black.opacity(0.12), radius: 12, y: 5)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .accessibilityLabel("今日打卡获得 \(outcome.awardedPoints) 积分，连续 \(outcome.streak) 天")
+            }
+        }
     }
 
     private var tabs: some View {
@@ -186,6 +217,9 @@ struct ContentView: View {
             NavigationStack { ReviewView() }
                 .tabItem { Label("每日复习", systemImage: "brain.head.profile") }
                 .tag(AppTab.review)
+            NavigationStack { BadgeView() }
+                .tabItem { Label("徽章", systemImage: "medal.fill") }
+                .tag(AppTab.badges)
             NavigationStack { SettingsView() }
                 .tabItem { Label("设置", systemImage: "gearshape") }
                 .tag(AppTab.settings)
@@ -288,6 +322,7 @@ struct ContentView: View {
 private enum AppTab: Hashable {
     case settings
     case review
+    case badges
     case addWord
     case wordBook
 }

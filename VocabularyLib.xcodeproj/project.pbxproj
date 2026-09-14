@@ -26,9 +26,11 @@
 		54428A05FF49B4A25B90341E /* DictionaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D75D4D435490B6BC1C9D2D6 /* DictionaryService.swift */; };
 		5DB7614375565AB94FB4F0F4 /* MacOCRView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F72EDAF8FA2F2A149371B2 /* MacOCRView.swift */; };
 		60FD2D10BC96A45186303163 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 753782D6BB84FB28BEABFF58 /* libsqlite3.tbd */; };
+		625CD4B2CDCF282EF50124B3 /* BadgeAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 929A79D6D70F69C46971AA17 /* BadgeAssets.xcassets */; };
 		69CC6C6FC19F892C90C47EC4 /* WordEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF24EA4A373750732FBBB95 /* WordEntry.swift */; };
 		6AA832D3F0818831E6C6AF1F /* DictionaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D75D4D435490B6BC1C9D2D6 /* DictionaryService.swift */; };
 		766C3AB8F8308A2C92170F6B /* VocabularyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D2721EDC22CF80F6A5E669D8 /* VocabularyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		80AFAFF38CE2ED59818765FB /* BadgeProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F12F9F8BF0CEF539264F6E /* BadgeProgress.swift */; };
 		82658D2C46BA296A8171BC49 /* LocalDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B839E4F249AEAE62ED851F /* LocalDictionary.swift */; };
 		88902DAF84C3F89D016B6790 /* WordEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF24EA4A373750732FBBB95 /* WordEntry.swift */; };
 		8C5C9E0A616C7E2E26FB1F0A /* MacTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8347D7DFD81EF1C1444CA4 /* MacTheme.swift */; };
@@ -40,10 +42,14 @@
 		BD66846201401C1D545D7B62 /* examples.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 271C52E06E7705B96CD7E6D5 /* examples.sqlite */; };
 		BF3F2A781335AA093B4CD089 /* VocabularyLibMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA8F2460EE15EE81FED5EF3 /* VocabularyLibMacApp.swift */; };
 		C025DE34A663433C1893D7AA /* MacContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67ED355A74F7ABB23CE30FB /* MacContentView.swift */; };
+		C18D7ABE907B5F6E1EF518BE /* BadgeProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F12F9F8BF0CEF539264F6E /* BadgeProgress.swift */; };
+		CB8B8C714E298316D182A8BC /* BadgeAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 929A79D6D70F69C46971AA17 /* BadgeAssets.xcassets */; };
 		D00953E1A0EA1526F556C54E /* WordNet-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 643F5C985C57BFFAE42A0FA8 /* WordNet-LICENSE.txt */; };
+		E26CEBD476FAF2665B39233A /* BadgeProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15BE3980FD9BE07F759445A4 /* BadgeProgressTests.swift */; };
 		E49E134EA3501FE5D5918564 /* ImageCropFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 712799A5E1AE3E184AE892E4 /* ImageCropFlowTests.swift */; };
 		E59B8DDC49C643B362B206BE /* ReviewRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2FFD3ABAE63A141E6E88789 /* ReviewRecord.swift */; };
 		E8383B6B6D9E04D05FD53709 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C6ECFFF3E6DBCF32554B614F /* Assets.xcassets */; };
+		EAF6D3661BF1E92E62979825 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A2AD237CACC5C65F7A40086 /* BadgeView.swift */; };
 		EC2F171A3980E06AB36C256B /* CameraOCRView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF88EAE05D27302CAF399C3 /* CameraOCRView.swift */; };
 		ECDF8D399CF44592D81944AD /* ECDICT-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9671717D6934447E5DA3D42E /* ECDICT-LICENSE.txt */; };
 		EE9DA8213943379D1C9D1BA4 /* VocabularyLibApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866F284DA37E19F8B7361F2A /* VocabularyLibApp.swift */; };
@@ -93,6 +99,7 @@
 /* Begin PBXFileReference section */
 		104CD2C74E1F2CF8AA6B1886 /* ImageCropModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropModelTests.swift; sourceTree = "<group>"; };
 		1117F4EF39B882545267FB3E /* VocabularyLibUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VocabularyLibUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		15BE3980FD9BE07F759445A4 /* BadgeProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeProgressTests.swift; sourceTree = "<group>"; };
 		16A113BE91E53BB155549D6F /* ImageCropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropView.swift; sourceTree = "<group>"; };
 		18D64F86CB0B68847B86FADD /* ecdict.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = ecdict.sqlite; sourceTree = "<group>"; };
 		1B3A0BA1107CFA007A7E39A6 /* VocabularyLibTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VocabularyLibTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -101,6 +108,7 @@
 		3DB5DF297EFFE5DB149784C0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		448067E729C2F08BB2C0FBC7 /* VocabularyWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyWidget.swift; sourceTree = "<group>"; };
 		4C098FBF9EEBD4B5BCC74CF4 /* ImageRecognitionMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRecognitionMenu.swift; sourceTree = "<group>"; };
+		5A2AD237CACC5C65F7A40086 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
 		5C643278806337B91B54A357 /* SystemDictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictionaryView.swift; sourceTree = "<group>"; };
 		643F5C985C57BFFAE42A0FA8 /* WordNet-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "WordNet-LICENSE.txt"; sourceTree = "<group>"; };
 		712799A5E1AE3E184AE892E4 /* ImageCropFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropFlowTests.swift; sourceTree = "<group>"; };
@@ -110,6 +118,7 @@
 		866F284DA37E19F8B7361F2A /* VocabularyLibApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyLibApp.swift; sourceTree = "<group>"; };
 		8A676EA5CFCF503FE5AE4685 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8EE7B97906EA7B431E45F094 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		929A79D6D70F69C46971AA17 /* BadgeAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = BadgeAssets.xcassets; sourceTree = "<group>"; };
 		9671717D6934447E5DA3D42E /* ECDICT-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "ECDICT-LICENSE.txt"; sourceTree = "<group>"; };
 		97D2DBAD5D8116454DEBEE4D /* ReviewSwipeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSwipeTests.swift; sourceTree = "<group>"; };
 		9CA8F2460EE15EE81FED5EF3 /* VocabularyLibMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyLibMacApp.swift; sourceTree = "<group>"; };
@@ -120,6 +129,7 @@
 		B041A1E13F774721F3E845C9 /* ImageImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageImportView.swift; sourceTree = "<group>"; };
 		B0709AE5E2BA5C6EC7464E99 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B86ADDEA3A22A32C13C1699F /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+		C0F12F9F8BF0CEF539264F6E /* BadgeProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeProgress.swift; sourceTree = "<group>"; };
 		C2FFD3ABAE63A141E6E88789 /* ReviewRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewRecord.swift; sourceTree = "<group>"; };
 		C6ECFFF3E6DBCF32554B614F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CC6942062259F5E6DE27AB55 /* VocabularyLib.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VocabularyLib.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -175,6 +185,7 @@
 		26BAE98FA0744B0E15487A29 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				929A79D6D70F69C46971AA17 /* BadgeAssets.xcassets */,
 				9671717D6934447E5DA3D42E /* ECDICT-LICENSE.txt */,
 				18D64F86CB0B68847B86FADD /* ecdict.sqlite */,
 				E1D8A510976B7037A5F96641 /* ecdict.sqlite.bak.20260912_140352 */,
@@ -209,6 +220,7 @@
 			isa = PBXGroup;
 			children = (
 				84EC065A67B754EC6DC7398C /* AppTheme.swift */,
+				5A2AD237CACC5C65F7A40086 /* BadgeView.swift */,
 				AAF88EAE05D27302CAF399C3 /* CameraOCRView.swift */,
 				16A113BE91E53BB155549D6F /* ImageCropView.swift */,
 				B041A1E13F774721F3E845C9 /* ImageImportView.swift */,
@@ -281,6 +293,7 @@
 		DF4991462287CF66C22D2247 /* VocabularyLibTests */ = {
 			isa = PBXGroup;
 			children = (
+				15BE3980FD9BE07F759445A4 /* BadgeProgressTests.swift */,
 				104CD2C74E1F2CF8AA6B1886 /* ImageCropModelTests.swift */,
 			);
 			path = VocabularyLibTests;
@@ -289,6 +302,7 @@
 		FDF748C645010F1545676439 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				C0F12F9F8BF0CEF539264F6E /* BadgeProgress.swift */,
 				C2FFD3ABAE63A141E6E88789 /* ReviewRecord.swift */,
 				2FF24EA4A373750732FBBB95 /* WordEntry.swift */,
 			);
@@ -446,6 +460,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E8383B6B6D9E04D05FD53709 /* Assets.xcassets in Resources */,
+				625CD4B2CDCF282EF50124B3 /* BadgeAssets.xcassets in Resources */,
 				B59F12FD803503F3DAB6C219 /* ECDICT-LICENSE.txt in Resources */,
 				D00953E1A0EA1526F556C54E /* WordNet-LICENSE.txt in Resources */,
 				13028A4CD7D694E3FCD8D20D /* ecdict.sqlite in Resources */,
@@ -458,6 +473,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05629B127E92920C08ABF314 /* Assets.xcassets in Resources */,
+				CB8B8C714E298316D182A8BC /* BadgeAssets.xcassets in Resources */,
 				ECDF8D399CF44592D81944AD /* ECDICT-LICENSE.txt in Resources */,
 				1D92A5523814EBC208520B84 /* WordNet-LICENSE.txt in Resources */,
 				93A5C582F636471B62610B1D /* ecdict.sqlite in Resources */,
@@ -484,6 +500,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				4274A38F5C30CD6B7E26523C /* AppTheme.swift in Sources */,
+				C18D7ABE907B5F6E1EF518BE /* BadgeProgress.swift in Sources */,
+				EAF6D3661BF1E92E62979825 /* BadgeView.swift in Sources */,
 				EC2F171A3980E06AB36C256B /* CameraOCRView.swift in Sources */,
 				4492434DC567788A1345F2C8 /* ContentView.swift in Sources */,
 				54428A05FF49B4A25B90341E /* DictionaryService.swift in Sources */,
@@ -513,6 +531,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80AFAFF38CE2ED59818765FB /* BadgeProgress.swift in Sources */,
 				6AA832D3F0818831E6C6AF1F /* DictionaryService.swift in Sources */,
 				82658D2C46BA296A8171BC49 /* LocalDictionary.swift in Sources */,
 				C025DE34A663433C1893D7AA /* MacContentView.swift in Sources */,
@@ -529,6 +548,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E26CEBD476FAF2665B39233A /* BadgeProgressTests.swift in Sources */,
 				2790C6761BFA3D638923961F /* ImageCropModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

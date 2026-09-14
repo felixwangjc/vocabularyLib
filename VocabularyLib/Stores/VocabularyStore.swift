@@ -7,6 +7,9 @@ final class VocabularyStore: ObservableObject {
     @Published var isLoading = false
     @Published private(set) var reviews: [String: ReviewRecord] = [:]
     private let reviewKey = "vocabulary.reviews.v1"
+    @Published private(set) var badgeProgress: BadgeProgress
+    @Published private(set) var latestCheckInOutcome: DailyCheckInOutcome?
+    private let badgeProgressKey = "vocabulary.badges.v1"
 
     private let storageKey = "vocabulary.entries.v1"
     private let dictionary = DictionaryService()
@@ -16,11 +19,15 @@ final class VocabularyStore: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        badgeProgress = defaults.data(forKey: badgeProgressKey)
+            .flatMap { try? JSONDecoder().decode(BadgeProgress.self, from: $0) } ?? BadgeProgress()
         load()
         if let data = defaults.data(forKey: reviewKey),
            let records = try? JSONDecoder().decode([String: ReviewRecord].self, from: data) {
             reviews = records
         }
+        let outcome = checkInIfNeeded()
+        latestCheckInOutcome = outcome.didCheckIn ? outcome : nil
     }
 
     func dueWords(at now: Date) -> [WordEntry] {
@@ -57,6 +64,23 @@ final class VocabularyStore: ObservableObject {
         if let data = try? JSONEncoder().encode(reviews) {
             defaults.set(data, forKey: reviewKey)
         }
+    }
+
+    @discardableResult
+    func checkInIfNeeded(at now: Date = .now) -> DailyCheckInOutcome {
+        let outcome = badgeProgress.checkIn(at: now)
+        if outcome.didCheckIn { saveBadgeProgress() }
+        return outcome
+    }
+
+    func redeem(_ badge: BadgeDefinition) -> Bool {
+        guard badgeProgress.redeem(badge) else { return false }
+        saveBadgeProgress()
+        return true
+    }
+
+    func owns(_ badge: BadgeDefinition) -> Bool {
+        badgeProgress.ownedBadgeIDs.contains(badge.id)
     }
 
     func contains(_ word: String) -> Bool {
@@ -119,5 +143,10 @@ final class VocabularyStore: ObservableObject {
     private func save() {
         guard let data = try? JSONEncoder().encode(entries) else { return }
         defaults.set(data, forKey: storageKey)
+    }
+
+    private func saveBadgeProgress() {
+        guard let data = try? JSONEncoder().encode(badgeProgress) else { return }
+        defaults.set(data, forKey: badgeProgressKey)
     }
 }

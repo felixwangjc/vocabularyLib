@@ -9,6 +9,7 @@ struct MacContentView: View {
     @State private var selectedEntry: WordEntry?
     @State private var ocrImage: MacImageItem?
     @State private var alert: MacAlert?
+    @State private var showsCheckInToast = true
 
     var body: some View {
         NavigationSplitView {
@@ -31,6 +32,7 @@ struct MacContentView: View {
                 case .add: MacAddWordView(showAlert: { alert = $0 })
                 case .book: MacWordBookView(selectedEntry: $selectedEntry)
                 case .review: MacReviewView()
+                case .badges: MacBadgeView()
                 case .settings: MacSettingsView()
                 }
             }
@@ -56,6 +58,23 @@ struct MacContentView: View {
         }
         .alert(item: $alert) { value in
             Alert(title: Text(value.title), message: Text(value.message), dismissButton: .default(Text("知道了")))
+        }
+        .overlay(alignment: .top) {
+            if showsCheckInToast, let outcome = store.latestCheckInOutcome, outcome.didCheckIn {
+                Label("今日打卡 +\(outcome.awardedPoints) 积分 · 连续 \(outcome.streak) 天", systemImage: "checkmark.seal.fill")
+                    .font(.headline).foregroundStyle(.green)
+                    .padding(.horizontal, 18).padding(.vertical, 11)
+                    .background(.regularMaterial, in: Capsule())
+                    .overlay { Capsule().strokeBorder(Color.green.opacity(0.25)) }
+                    .shadow(color: .black.opacity(0.18), radius: 12, y: 5)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .task {
+            guard store.latestCheckInOutcome?.didCheckIn == true else { return }
+            try? await Task.sleep(for: .seconds(3.5))
+            withAnimation(.easeOut(duration: 0.25)) { showsCheckInToast = false }
         }
     }
 
@@ -89,13 +108,14 @@ struct MacContentView: View {
 }
 
 private enum MacSection: String, CaseIterable, Identifiable {
-    case add, book, review, settings
+    case add, book, review, badges, settings
     var id: Self { self }
     var title: String {
         switch self {
         case .add: return "输入单词"
         case .book: return "单词本"
         case .review: return "每日复习"
+        case .badges: return "徽章馆"
         case .settings: return "设置"
         }
     }
@@ -104,6 +124,7 @@ private enum MacSection: String, CaseIterable, Identifiable {
         case .add: return "text.cursor"
         case .book: return "books.vertical"
         case .review: return "brain.head.profile"
+        case .badges: return "medal.fill"
         case .settings: return "gearshape"
         }
     }
@@ -348,6 +369,104 @@ private struct MacWordDetailBody: View {
                 if !entry.example.isEmpty { Text("“\(entry.example)”").italic() }
             }.frame(maxWidth: .infinity, alignment: .leading)
         }.frame(maxHeight: 390)
+    }
+}
+
+private struct MacBadgeView: View {
+    @EnvironmentObject private var store: VocabularyStore
+    @State private var message: MacAlert?
+    @State private var filter: MacBadgeFilter = .all
+    private let columns = [GridItem(.adaptive(minimum: 190), spacing: 16)]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 22) {
+                Text("徽章馆").font(.system(size: 38, weight: .black, design: .rounded))
+                HStack(spacing: 14) {
+                    stat("可用积分", value: store.badgeProgress.points, icon: "seal.fill")
+                    stat("连续天数", value: store.badgeProgress.currentStreak, icon: "flame.fill")
+                    stat("累计打卡", value: store.badgeProgress.totalCheckInDays, icon: "calendar")
+                    VStack(alignment: .leading, spacing: 5) {
+                        Label("今日 +\(store.badgeProgress.lastCheckInPoints)", systemImage: "checkmark.circle.fill")
+                            .font(.headline).foregroundStyle(.green)
+                        Text("每日首次打开自动打卡").font(.caption).foregroundStyle(.secondary)
+                    }
+                    .padding(18).frame(maxWidth: .infinity, alignment: .leading).macCard(MacTheme.peach, cornerRadius: 20)
+                }
+                Picker("筛选徽章", selection: $filter) {
+                    ForEach(MacBadgeFilter.allCases) { option in Text(option.title).tag(option) }
+                }.pickerStyle(.segmented).frame(maxWidth: 520)
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(visibleBadges) { badge in
+                        card(badge)
+                    }
+                }
+            }
+            .padding(34).frame(maxWidth: 1050).frame(maxWidth: .infinity)
+        }
+        .background(MacTheme.canvas)
+        .alert(item: $message) { alert in
+            Alert(title: Text(alert.title), message: Text(alert.message), dismissButton: .default(Text("知道了")))
+        }
+    }
+
+    private var visibleBadges: [BadgeDefinition] {
+        switch filter {
+        case .all: BadgeCatalog.all
+        case .available: BadgeCatalog.all.filter { !store.owns($0) && store.badgeProgress.points >= $0.cost }
+        case .owned: BadgeCatalog.all.filter(store.owns)
+        }
+    }
+
+    private func stat(_ title: String, value: Int, icon: String) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Label("\(value)", systemImage: icon).font(.title3.bold()).foregroundStyle(MacTheme.accent)
+            Text(title).font(.caption).foregroundStyle(.secondary)
+        }
+        .padding(18).frame(maxWidth: .infinity, alignment: .leading).macCard(MacTheme.surface, cornerRadius: 20)
+    }
+
+    private func card(_ badge: BadgeDefinition) -> some View {
+        let owned = store.owns(badge)
+        let affordable = store.badgeProgress.points >= badge.cost
+        return VStack(spacing: 10) {
+            Image(badge.assetName).resizable().scaledToFit().frame(height: 116)
+                .saturation(owned || affordable ? 1 : 0.2).opacity(owned || affordable ? 1 : 0.55)
+            Text(badge.name).font(.headline)
+            Text(badge.detail).font(.caption).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center).lineLimit(2, reservesSpace: true)
+            if owned {
+                Label("已收藏", systemImage: "checkmark.seal.fill").foregroundStyle(.green).font(.headline)
+                    .frame(maxWidth: .infinity).padding(.vertical, 8).background(Color.green.opacity(0.12), in: Capsule())
+            } else {
+                ProgressView(value: min(Double(store.badgeProgress.points) / Double(badge.cost), 1)).tint(MacTheme.accent)
+                Button { redeem(badge) } label: {
+                    Label("\(badge.cost) 积分", systemImage: affordable ? "sparkles" : "lock.fill").frame(maxWidth: .infinity)
+                }.buttonStyle(.borderedProminent).disabled(!affordable)
+            }
+        }
+        .padding(18).frame(maxWidth: .infinity)
+        .macCard(MacTheme.pastel(badge.cost), cornerRadius: 24)
+    }
+
+    private func redeem(_ badge: BadgeDefinition) {
+        if store.redeem(badge) {
+            message = MacAlert(title: "兑换成功", message: "“\(badge.name)”已经加入你的徽章收藏。")
+        } else {
+            message = MacAlert(title: "积分不足", message: "继续每天使用 App，就能积攒更多积分。")
+        }
+    }
+}
+
+private enum MacBadgeFilter: String, CaseIterable, Identifiable {
+    case all, available, owned
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .all: "全部 \(BadgeCatalog.all.count)"
+        case .available: "可兑换"
+        case .owned: "已收藏"
+        }
     }
 }
 
