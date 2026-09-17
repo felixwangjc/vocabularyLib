@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        AA0222222222222222222201 /* ReviewExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0222222222222222222200; };
+        AA0222222222222222222202 /* ReviewExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0222222222222222222200; };
+        AA0111111111111111111104 /* StudyPlanAndSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0111111111111111111103 /* StudyPlanAndSearchTests.swift */; };
+        AA0111111111111111111101 /* StudyTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0111111111111111111100 /* StudyTools.swift */; };
+        AA0111111111111111111102 /* StudyTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0111111111111111111100 /* StudyTools.swift */; };
 		05629B127E92920C08ABF314 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0709AE5E2BA5C6EC7464E99 /* Assets.xcassets */; };
 		10FA15A701A2B88DC812E7E4 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86ADDEA3A22A32C13C1699F /* ReviewView.swift */; };
 		13028A4CD7D694E3FCD8D20D /* ecdict.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 18D64F86CB0B68847B86FADD /* ecdict.sqlite */; };
@@ -97,12 +102,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        AA0222222222222222222200 /* ReviewExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Shared/ReviewExerciseView.swift; sourceTree = "<group>"; };
+        AA0111111111111111111103 /* StudyPlanAndSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyPlanAndSearchTests.swift; sourceTree = "<group>"; };
+        AA0111111111111111111100 /* StudyTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Shared/StudyTools.swift; sourceTree = "<group>"; };
 		104CD2C74E1F2CF8AA6B1886 /* ImageCropModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropModelTests.swift; sourceTree = "<group>"; };
-		1117F4EF39B882545267FB3E /* VocabularyLibUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VocabularyLibUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1117F4EF39B882545267FB3E /* VocabularyLibUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VocabularyLibUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		15BE3980FD9BE07F759445A4 /* BadgeProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeProgressTests.swift; sourceTree = "<group>"; };
 		16A113BE91E53BB155549D6F /* ImageCropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropView.swift; sourceTree = "<group>"; };
 		18D64F86CB0B68847B86FADD /* ecdict.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = ecdict.sqlite; sourceTree = "<group>"; };
-		1B3A0BA1107CFA007A7E39A6 /* VocabularyLibTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VocabularyLibTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1B3A0BA1107CFA007A7E39A6 /* VocabularyLibTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VocabularyLibTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		271C52E06E7705B96CD7E6D5 /* examples.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = examples.sqlite; sourceTree = "<group>"; };
 		2FF24EA4A373750732FBBB95 /* WordEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordEntry.swift; sourceTree = "<group>"; };
 		3DB5DF297EFFE5DB149784C0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -133,9 +141,9 @@
 		C2FFD3ABAE63A141E6E88789 /* ReviewRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewRecord.swift; sourceTree = "<group>"; };
 		C6ECFFF3E6DBCF32554B614F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CC6942062259F5E6DE27AB55 /* VocabularyLib.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VocabularyLib.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D2721EDC22CF80F6A5E669D8 /* VocabularyWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = VocabularyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2721EDC22CF80F6A5E669D8 /* VocabularyWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = VocabularyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD8347D7DFD81EF1C1444CA4 /* MacTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTheme.swift; sourceTree = "<group>"; };
-		E1D8A510976B7037A5F96641 /* ecdict.sqlite.bak.20260912_140352 */ = {isa = PBXFileReference; path = ecdict.sqlite.bak.20260912_140352; sourceTree = "<group>"; };
+		E1D8A510976B7037A5F96641 /* ecdict.sqlite.bak.20260912_140352 */ = {isa = PBXFileReference; lastKnownFileType = file; path = ecdict.sqlite.bak.20260912_140352; sourceTree = "<group>"; };
 		E330B2C215CD79C4656EDA1A /* ImageMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageMenuTests.swift; sourceTree = "<group>"; };
 		E4B839E4F249AEAE62ED851F /* LocalDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDictionary.swift; sourceTree = "<group>"; };
 		EC2976BA282E0BAD7F351C3D /* VocabularyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyStore.swift; sourceTree = "<group>"; };
@@ -294,6 +302,7 @@
 			isa = PBXGroup;
 			children = (
 				15BE3980FD9BE07F759445A4 /* BadgeProgressTests.swift */,
+                AA0111111111111111111103 /* StudyPlanAndSearchTests.swift */,
 				104CD2C74E1F2CF8AA6B1886 /* ImageCropModelTests.swift */,
 			);
 			path = VocabularyLibTests;
@@ -305,6 +314,8 @@
 				C0F12F9F8BF0CEF539264F6E /* BadgeProgress.swift */,
 				C2FFD3ABAE63A141E6E88789 /* ReviewRecord.swift */,
 				2FF24EA4A373750732FBBB95 /* WordEntry.swift */,
+                AA0111111111111111111100 /* StudyTools.swift */,
+                AA0222222222222222222200 /* ReviewExerciseView.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -426,7 +437,6 @@
 						TestTargetID = CCF543D1A5478703D680849A;
 					};
 					FADDF0F52420C60CE7BBF61F = {
-						DevelopmentTeam = VN4X5HF5ZJ;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -516,6 +526,8 @@
 				EE9DA8213943379D1C9D1BA4 /* VocabularyLibApp.swift in Sources */,
 				1BAEE0B66ABD7FB3081FCDEA /* VocabularyStore.swift in Sources */,
 				69CC6C6FC19F892C90C47EC4 /* WordEntry.swift in Sources */,
+                AA0111111111111111111101 /* StudyTools.swift in Sources */,
+                AA0222222222222222222201 /* ReviewExerciseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -541,6 +553,8 @@
 				BF3F2A781335AA093B4CD089 /* VocabularyLibMacApp.swift in Sources */,
 				53D183CFD317442A00AB0421 /* VocabularyStore.swift in Sources */,
 				88902DAF84C3F89D016B6790 /* WordEntry.swift in Sources */,
+                AA0111111111111111111102 /* StudyTools.swift in Sources */,
+                AA0222222222222222222202 /* ReviewExerciseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -549,6 +563,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E26CEBD476FAF2665B39233A /* BadgeProgressTests.swift in Sources */,
+                AA0111111111111111111104 /* StudyPlanAndSearchTests.swift in Sources */,
 				2790C6761BFA3D638923961F /* ImageCropModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -578,6 +593,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = VN4X5HF5ZJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -683,6 +699,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = VN4X5HF5ZJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -700,6 +717,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = VN4X5HF5ZJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -832,6 +850,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = VN4X5HF5ZJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

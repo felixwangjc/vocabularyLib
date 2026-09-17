@@ -276,7 +276,7 @@ struct ContentView: View {
                     return
                 }
                 word = ""
-                alert = AppAlert(title: "已加入单词本", message: "“\(input)” 已保存，缺少的例句将在后台补充。")
+                selectedEntry = store.entries.first
             } catch {
                 alert = AppAlert(title: "添加失败", message: error.localizedDescription, word: input)
             }
@@ -393,11 +393,22 @@ private struct InputWordView: View {
 private struct WordBookView: View {
     @EnvironmentObject private var store: VocabularyStore
     @Binding var selectedEntry: WordEntry?
+    @State private var query = ""
+    @State private var status: WordStatusFilter = .all
+    @State private var tag: String?
+    @State private var sort: WordSortOrder = .newest
+    private var words: [WordEntry] { store.filteredWords(query: query, status: status, tag: tag, sort: sort) }
 
     var body: some View {
         List {
+            WordLibraryControls(query: $query, status: $status, tag: $tag, sort: $sort)
+                .listRowBackground(Color.clear).listRowSeparator(.hidden)
             Section {
-                ForEach(store.entries) { entry in
+                if words.isEmpty {
+                    ContentUnavailableView(store.entries.isEmpty ? "还没有单词" : "没有匹配的单词", systemImage: "magnifyingglass", description: Text("尝试添加单词，或调整搜索和筛选条件。"))
+                        .listRowBackground(Color.clear)
+                }
+                ForEach(words) { entry in
                     Button { selectedEntry = entry } label: {
                         WordRow(entry: entry)
                     }
@@ -406,12 +417,12 @@ private struct WordBookView: View {
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                 }
-                .onDelete(perform: store.delete)
+                .onDelete { offsets in store.delete(ids: Set(offsets.map { words[$0].id })) }
             } header: {
                 HStack {
                     Text("我的单词本").font(.title3.bold()).foregroundStyle(.primary)
                     Spacer()
-                    Text("\(store.entries.count) 个单词").foregroundStyle(AppTheme.accent)
+                    Text("\(words.count) / \(store.entries.count) 词").foregroundStyle(AppTheme.accent)
                 }
                 .textCase(nil)
             }
@@ -419,17 +430,17 @@ private struct WordBookView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .learningScreenBackground()
-        .overlay {
-            if store.entries.isEmpty {
-                ContentUnavailableView("还没有单词", systemImage: "text.book.closed", description: Text("在“输入单词”中记录你的第一个英文单词。"))
-            }
-        }
     }
 }
 
 private struct LandscapeWordSidebar: View {
     @EnvironmentObject private var store: VocabularyStore
     @Binding var selectedEntry: WordEntry?
+    @State private var query = ""
+    @State private var status: WordStatusFilter = .all
+    @State private var tag: String?
+    @State private var sort: WordSortOrder = .newest
+    private var words: [WordEntry] { store.filteredWords(query: query, status: status, tag: tag, sort: sort) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -444,13 +455,15 @@ private struct LandscapeWordSidebar: View {
             .padding(.top, 30)
             .padding(.bottom, 18)
 
-            if store.entries.isEmpty {
+            WordLibraryControls(query: $query, status: $status, tag: $tag, sort: $sort).padding(.horizontal, 16)
+
+            if words.isEmpty {
                 Spacer()
-                ContentUnavailableView("还没有单词", systemImage: "text.book.closed", description: Text("从“输入单词”开始记录。"))
+                ContentUnavailableView("没有匹配的单词", systemImage: "text.book.closed", description: Text("添加单词或调整筛选条件。"))
                     .padding(.horizontal, 16)
                 Spacer()
             } else {
-                List(store.entries) { entry in
+                List(words) { entry in
                     Button { selectedEntry = entry } label: {
                         WordRow(entry: entry)
                     }
@@ -573,6 +586,9 @@ private struct WordRow: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(entry.word).font(.headline)
                 Text(entry.chineseDefinition).lineLimit(1).font(.subheadline).foregroundStyle(.secondary)
+                if let tags = entry.tags, !tags.isEmpty {
+                    Text(tags.map { "#\($0)" }.joined(separator: "  ")).font(.caption).foregroundStyle(AppTheme.accent).lineLimit(2)
+                }
                 Text("\(status) · \(record?.reviewCount.map { "已复习 \($0) 次" } ?? (record?.lastReviewedAt == nil ? "已复习 0 次" : "历史次数未记录"))")
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -625,6 +641,9 @@ struct WordCard: View {
             if let message = pronunciation.message {
                 Text(message).font(.caption).foregroundStyle(.secondary)
             }
+            WordTagsEditor(entryID: entry.id)
+            WordMasteryView(entryID: entry.id)
+            ReadingContextSection(entryID: entry.id)
             Divider()
             ForEach(currentEntry.groupedMeanings) { meaning in
                 VStack(alignment: .leading, spacing: 12) {

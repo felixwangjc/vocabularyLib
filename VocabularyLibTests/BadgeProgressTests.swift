@@ -2,11 +2,35 @@ import XCTest
 @testable import VocabularyLib
 
 final class BadgeProgressTests: XCTestCase {
-    func testCatalogContainsThirtyUniqueBadges() {
-        XCTAssertEqual(BadgeCatalog.all.count, 30)
-        XCTAssertEqual(Set(BadgeCatalog.all.map(\.id)).count, 30)
-        XCTAssertEqual(Set(BadgeCatalog.all.map(\.assetName)).count, 30)
-        XCTAssertEqual(BadgeCatalog.all.map(\.cost), BadgeCatalog.all.map(\.cost).sorted())
+    func testCatalogContainsRewardAndAlphabetBadges() {
+        XCTAssertEqual(BadgeCatalog.rewardBadges.count, 30)
+        XCTAssertEqual(BadgeCatalog.alphabetBadges.count, 52)
+        XCTAssertEqual(BadgeCatalog.all.count, 82)
+        XCTAssertEqual(Set(BadgeCatalog.all.map(\.id)).count, 82)
+        XCTAssertEqual(Set(BadgeCatalog.all.map(\.assetName)).count, 82)
+        XCTAssertEqual(BadgeCatalog.rewardBadges.map(\.cost), BadgeCatalog.rewardBadges.map(\.cost).sorted())
+    }
+
+    func testAlphabetBadgesUnlockAtFiftyAndOneHundredWords() {
+        let words = (0..<49).map { "a\($0)" }
+            + (0..<50).map { "B\($0)" }
+            + (0..<100).map { "c\($0)" }
+            + ["  123", "中文"]
+        let earned = BadgeCatalog.automaticallyEarnedBadgeIDs(for: words)
+
+        XCTAssertFalse(earned.contains("letter_lower_a"))
+        XCTAssertTrue(earned.contains("letter_lower_b"))
+        XCTAssertFalse(earned.contains("letter_upper_b"))
+        XCTAssertTrue(earned.contains("letter_lower_c"))
+        XCTAssertTrue(earned.contains("letter_upper_c"))
+        XCTAssertEqual(BadgeCatalog.initialCounts(for: words)["c"], 100)
+    }
+
+    func testAlphabetBadgesCannotBeRedeemedWithPoints() {
+        var progress = BadgeProgress(points: 10_000)
+        let badge = BadgeCatalog.alphabetBadges[0]
+        XCTAssertFalse(progress.redeem(badge))
+        XCTAssertFalse(progress.ownedBadgeIDs.contains(badge.id))
     }
 
     func testDailyCheckInOnlyAwardsOnceAndBuildsStreak() {

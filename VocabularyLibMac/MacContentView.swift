@@ -29,7 +29,7 @@ struct MacContentView: View {
         } detail: {
             Group {
                 switch section {
-                case .add: MacAddWordView(showAlert: { alert = $0 })
+                case .add: MacAddWordView(showAlert: { alert = $0 }, showEntry: { selectedEntry = $0 })
                 case .book: MacWordBookView(selectedEntry: $selectedEntry)
                 case .review: MacReviewView()
                 case .badges: MacBadgeView()
@@ -134,6 +134,7 @@ private struct MacAddWordView: View {
     @EnvironmentObject private var store: VocabularyStore
     @State private var word = ""
     let showAlert: (MacAlert) -> Void
+    let showEntry: (WordEntry) -> Void
 
     var body: some View {
         ScrollView {
@@ -184,7 +185,7 @@ private struct MacAddWordView: View {
             do {
                 if try await store.add(word: input) {
                     word = ""
-                    showAlert(MacAlert(title: "已加入单词本", message: "“\(input)” 已保存。"))
+                    if let entry = store.entries.first { showEntry(entry) }
                 }
             } catch { showAlert(MacAlert(title: "添加失败", message: error.localizedDescription)) }
         }
@@ -207,23 +208,29 @@ private struct MacFeature: View {
 private struct MacWordBookView: View {
     @EnvironmentObject private var store: VocabularyStore
     @Binding var selectedEntry: WordEntry?
+    @State private var query = ""
+    @State private var status: WordStatusFilter = .all
+    @State private var tag: String?
+    @State private var sort: WordSortOrder = .newest
+    private var words: [WordEntry] { store.filteredWords(query: query, status: status, tag: tag, sort: sort) }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(alignment: .firstTextBaseline) {
                 Text("单词本").font(.system(size: 38, weight: .black, design: .rounded))
                 Spacer()
-                Text("\(store.entries.count) 个单词").foregroundStyle(.secondary)
+                Text("\(words.count) / \(store.entries.count) 个单词").foregroundStyle(.secondary)
             }.padding(.horizontal, 30).padding(.top, 28)
-            if store.entries.isEmpty {
-                ContentUnavailableView("还没有单词", systemImage: "text.book.closed", description: Text("从输入单词开始记录。"))
+            WordLibraryControls(query: $query, status: $status, tag: $tag, sort: $sort).padding(.horizontal, 30)
+            if words.isEmpty {
+                ContentUnavailableView("没有匹配的单词", systemImage: "text.book.closed", description: Text("添加单词或调整筛选条件。"))
             } else {
                 List {
-                    ForEach(Array(store.entries.enumerated()), id: \.element.id) { index, entry in
+                    ForEach(Array(words.enumerated()), id: \.element.id) { index, entry in
                         Button { selectedEntry = entry } label: { MacWordRow(entry: entry, index: index) }
                             .buttonStyle(.plain).listRowBackground(Color.clear).listRowSeparator(.hidden)
-                            .contextMenu { Button("删除", role: .destructive) { store.delete(at: IndexSet(integer: index)) } }
+                            .contextMenu { Button("删除", role: .destructive) { store.delete(ids: [entry.id]) } }
                     }
-                    .onDelete(perform: store.delete)
+                    .onDelete { offsets in store.delete(ids: Set(offsets.map { words[$0].id })) }
                 }
                 .listStyle(.plain).scrollContentBackground(.hidden)
             }
@@ -243,6 +250,9 @@ private struct MacWordRow: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(entry.word).font(.title3.bold())
                 Text(entry.chineseDefinition.replacingOccurrences(of: "\n", with: " · ")).lineLimit(1).foregroundStyle(.secondary)
+                if let tags = entry.tags, !tags.isEmpty {
+                    Text(tags.map { "#\($0)" }.joined(separator: "  ")).font(.caption).foregroundStyle(MacTheme.accent).lineLimit(2)
+                }
             }
             Spacer()
             Text("复习 \(record?.reviewCount ?? 0) 次").font(.caption).foregroundStyle(.secondary)
@@ -285,6 +295,9 @@ struct MacWordDetail: View {
                     .foregroundStyle(.primary)
                     .background(MacTheme.lemon, in: RoundedRectangle(cornerRadius: 20))
                     .overlay { RoundedRectangle(cornerRadius: 20).strokeBorder(Color.primary.opacity(0.12)) }
+                    WordTagsEditor(entryID: entry.id)
+                    WordMasteryView(entryID: entry.id)
+                    ReadingContextSection(entryID: entry.id)
                     ForEach(current.groupedMeanings) { meaning in
                         VStack(alignment: .leading, spacing: 10) {
                             Text(meaning.title).font(.headline).foregroundStyle(MacTheme.accent)
@@ -320,13 +333,17 @@ private struct MacReviewView: View {
     @State private var revealed = false
     @State private var dragX: CGFloat = 0
     var body: some View {
-        let due = store.dueWords(at: .now)
+        TimelineView(.periodic(from: .now, by: 30)) { context in
+        let due = store.plannedWords(at: context.date)
+        ScrollView {
         VStack(spacing: 24) {
+            StudyPlanSummary(now: context.date)
             HStack {
                 Text("每日复习").font(.system(size: 38, weight: .black, design: .rounded))
                 Spacer(); Text("待学习 \(due.count) · 今日已学 \(store.reviewedToday(at: .now))")
             }
             if let entry = due.first {
+                ReviewExerciseView(entry: entry) { onAnswer in
                 VStack(spacing: 20) {
                     HStack { Label("左滑 · 记住", systemImage: "arrow.left").foregroundStyle(.green); Spacer(); Label("右滑 · 再次复习", systemImage: "arrow.right").foregroundStyle(MacTheme.accent) }
                     if revealed { MacWordDetailBody(entry: entry) }
@@ -337,22 +354,25 @@ private struct MacReviewView: View {
                         Spacer()
                     }
                     HStack {
-                        Button("记住了") { answer(entry, true) }.tint(.green)
-                        Button("再次复习") { answer(entry, false) }.tint(MacTheme.accent)
+                        Button("记住了") { onAnswer(true); revealed = false }.tint(.green)
+                        Button("再次复习") { onAnswer(false); revealed = false }.tint(MacTheme.accent)
                     }.buttonStyle(.borderedProminent).controlSize(.large)
                 }
                 .padding(24).macCard().offset(x: dragX).rotationEffect(.degrees(Double(dragX / 80)))
                 .gesture(DragGesture().onChanged { dragX = $0.translation.width }.onEnded { value in
-                    if abs(value.translation.width) > 120 { answer(entry, value.translation.width < 0) }
+                    if abs(value.translation.width) > 120 { onAnswer(value.translation.width < 0); revealed = false }
                     withAnimation(.spring) { dragX = 0 }
                 })
+                }.id(entry.id)
             } else {
-                ContentUnavailableView("当前学习任务已完成", systemImage: "checkmark.circle", description: Text("到期单词会自动出现。"))
+                ContentUnavailableView(store.nextRetry(at: context.date) == nil ? "当前计划任务已完成" : "稍后继续重练", systemImage: "checkmark.circle", description: Text("可调整每日上限继续学习，或明天回来。待重练单词到时会自动出现。"))
             }
             Spacer()
         }.padding(34).background(MacTheme.canvas)
+        }
+        .onChange(of: due.first?.id) { _, _ in revealed = false; dragX = 0 }
+        }
     }
-    private func answer(_ entry: WordEntry, _ remembered: Bool) { store.review(entry, remembered: remembered); revealed = false }
 }
 
 private struct MacWordDetailBody: View {
@@ -367,6 +387,7 @@ private struct MacWordDetailBody: View {
                     Text(meaning.englishDefinitions.joined(separator: "\n")).foregroundStyle(.secondary)
                 }
                 if !entry.example.isEmpty { Text("“\(entry.example)”").italic() }
+                ReadingContextSection(entryID: entry.id, editable: false)
             }.frame(maxWidth: .infinity, alignment: .leading)
         }.frame(maxHeight: 390)
     }
@@ -413,7 +434,8 @@ private struct MacBadgeView: View {
     private var visibleBadges: [BadgeDefinition] {
         switch filter {
         case .all: BadgeCatalog.all
-        case .available: BadgeCatalog.all.filter { !store.owns($0) && store.badgeProgress.points >= $0.cost }
+        case .alphabet: BadgeCatalog.alphabetBadges
+        case .available: BadgeCatalog.rewardBadges.filter { !store.owns($0) && store.badgeProgress.points >= $0.cost }
         case .owned: BadgeCatalog.all.filter(store.owns)
         }
     }
@@ -429,24 +451,36 @@ private struct MacBadgeView: View {
     private func card(_ badge: BadgeDefinition) -> some View {
         let owned = store.owns(badge)
         let affordable = store.badgeProgress.points >= badge.cost
+        let highlighted = owned || (!badge.isAlphabetBadge && affordable)
         return VStack(spacing: 10) {
             Image(badge.assetName).resizable().scaledToFit().frame(height: 116)
-                .saturation(owned || affordable ? 1 : 0.2).opacity(owned || affordable ? 1 : 0.55)
+                .saturation(highlighted ? 1 : 0.2).opacity(highlighted ? 1 : 0.55)
             Text(badge.name).font(.headline)
             Text(badge.detail).font(.caption).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).lineLimit(2, reservesSpace: true)
             if owned {
                 Label("已收藏", systemImage: "checkmark.seal.fill").foregroundStyle(.green).font(.headline)
                     .frame(maxWidth: .infinity).padding(.vertical, 8).background(Color.green.opacity(0.12), in: Capsule())
-            } else {
+            } else if case let .points(cost) = badge.unlockRequirement {
                 ProgressView(value: min(Double(store.badgeProgress.points) / Double(badge.cost), 1)).tint(MacTheme.accent)
                 Button { redeem(badge) } label: {
-                    Label("\(badge.cost) 积分", systemImage: affordable ? "sparkles" : "lock.fill").frame(maxWidth: .infinity)
+                    Label("\(cost) 积分", systemImage: affordable ? "sparkles" : "lock.fill").frame(maxWidth: .infinity)
                 }.buttonStyle(.borderedProminent).disabled(!affordable)
+            } else if case let .initialWordCount(_, required) = badge.unlockRequirement {
+                let count = store.initialWordCount(for: badge)
+                ProgressView(value: min(Double(count) / Double(required), 1)).tint(MacTheme.accent)
+                Label("\(count) / \(required) 个单词", systemImage: "lock.fill")
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity).padding(.vertical, 8)
+                    .background(Color.primary.opacity(0.06), in: Capsule())
             }
         }
         .padding(18).frame(maxWidth: .infinity)
-        .macCard(MacTheme.pastel(badge.cost), cornerRadius: 24)
+        .macCard(MacTheme.pastel(cardTintSeed(for: badge)), cornerRadius: 24)
+    }
+
+    private func cardTintSeed(for badge: BadgeDefinition) -> Int {
+        badge.cost > 0 ? badge.cost : badge.assetName.unicodeScalars.reduce(0) { $0 + Int($1.value) }
     }
 
     private func redeem(_ badge: BadgeDefinition) {
@@ -459,11 +493,12 @@ private struct MacBadgeView: View {
 }
 
 private enum MacBadgeFilter: String, CaseIterable, Identifiable {
-    case all, available, owned
+    case all, alphabet, available, owned
     var id: Self { self }
     var title: String {
         switch self {
         case .all: "全部 \(BadgeCatalog.all.count)"
+        case .alphabet: "字母"
         case .available: "可兑换"
         case .owned: "已收藏"
         }
@@ -474,6 +509,7 @@ private struct MacSettingsView: View {
     @EnvironmentObject private var store: VocabularyStore
     var body: some View {
         Form {
+            StudyPlanSettings()
             Section("本地存储") {
                 LabeledContent("单词数量", value: "\(store.entries.count)")
                 Text("macOS 版本当前使用本地存储，不进行设备间同步。")

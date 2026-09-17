@@ -36,6 +36,8 @@ struct CameraPicker: UIViewControllerRepresentable {
 }
 
 struct OCRReviewView: View {
+    @EnvironmentObject private var store: VocabularyStore
+    @State private var addedEntry: WordEntry?
     let originalImage: UIImage
     let addWord: (String) async -> WordAdditionResult
     @Environment(\.dismiss) private var dismiss
@@ -51,6 +53,8 @@ struct OCRReviewView: View {
     @State private var showsCropper = false
     @State private var isCropped = false
     @State private var recognitionVersion = 0
+    @State private var sourceBook = ""
+    @State private var sourcePage = ""
 
     init(image: UIImage, addWord: @escaping (String) async -> WordAdditionResult) {
         originalImage = image
@@ -61,6 +65,7 @@ struct OCRReviewView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                OCRSourceFields(book: $sourceBook, page: $sourcePage).padding(.horizontal, 20)
                 if isRecognizing {
                     Spacer()
                     ProgressView("正在识别图片中的英文单词…")
@@ -80,6 +85,9 @@ struct OCRReviewView: View {
                             Text("长按 2 秒加入")
                                 .font(.footnote.weight(.medium))
                                 .foregroundStyle(.secondary)
+                        }
+                        if let selected = words.first(where: { $0.id == selectedWordID }) {
+                            Text(selected.sentence).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                         }
                         ScrollView {
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 10)], spacing: 10) {
@@ -130,6 +138,21 @@ struct OCRReviewView: View {
             }
         }
         .sheet(item: $dictionaryTerm) { term in SystemDictionaryView(word: term.word) }
+        .sheet(item: $addedEntry) { entry in
+            NavigationStack {
+                ScrollView {
+                    WordCard(entry: entry).padding(20).frame(maxWidth: .infinity)
+                }
+                .background(AppTheme.canvas)
+                .navigationTitle(entry.word)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("完成") { addedEntry = nil }
+                    }
+                }
+            }
+            .presentationDetents([.medium, .large])
+        }
     }
 
     @MainActor
@@ -159,11 +182,18 @@ struct OCRReviewView: View {
         guard !addedWordIDs.contains(word.id), !addingWordIDs.contains(word.id) else { return }
         failedWordIDs.remove(word.id)
         addingWordIDs.insert(word.id)
+        let context = ReadingContext(sentence: word.sentence, bookTitle: sourceBook, page: sourcePage)
         Task { @MainActor in
-            let result = await addWord(word.text)
+            let result: WordAdditionResult = store.contains(word.text) ? .duplicate : await addWord(word.text)
             addingWordIDs.remove(word.id)
+            if case .failed = result { failedWordIDs.insert(word.id); return }
+            if let entry = store.entries.first(where: { $0.word.caseInsensitiveCompare(word.text) == .orderedSame }) {
+                store.saveReadingContext(context, for: entry.id)
+                addedEntry = entry
+            }
             switch result {
-            case .added: addedWordIDs.insert(word.id)
+            case .added:
+                addedWordIDs.insert(word.id)
             case .duplicate: duplicateWordIDs.insert(word.id)
             case .failed: failedWordIDs.insert(word.id)
             }
@@ -267,7 +297,7 @@ private enum OCRWordState {
         case .ready: return "长按加入"
         case .adding: return "加入中"
         case .added: return "已加入"
-        case .duplicate: return "重复添加"
+        case .duplicate: return "重复添加 · 语境已存"
         case .failed: return "添加失败"
         }
     }
@@ -335,6 +365,7 @@ private struct OCRWordChip: View {
             }
         }, perform: add)
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("ocrWord-\(word.text)")
         .accessibilityHint(state == .ready ? "长按两秒将单词加入单词本" : state.title)
     }
 
@@ -358,6 +389,7 @@ private struct RecognizedWord: Identifiable {
     let id = UUID()
     let text: String
     let boundingBox: CGRect
+    let sentence: String
 }
 
 private enum TextRecognizer {
@@ -365,21 +397,29 @@ private enum TextRecognizer {
         guard let cgImage = image.cgImage else { return [] }
         return await withCheckedContinuation { continuation in
             let request = VNRecognizeTextRequest { request, _ in
-                let words = (request.results as? [VNRecognizedTextObservation] ?? []).flatMap { observation -> [RecognizedWord] in
-                    guard let candidate = observation.topCandidates(1).first, candidate.confidence >= 0.6 else { return [] }
+                let candidates = (request.results as? [VNRecognizedTextObservation] ?? [])
+                    .sorted { $0.boundingBox.midY > $1.boundingBox.midY }
+                    .compactMap { observation -> (VNRecognizedText, CGRect)? in
+                        guard let candidate = observation.topCandidates(1).first, candidate.confidence >= 0.6 else { return nil }
+                        return (candidate, observation.boundingBox)
+                    }
+                let lines = candidates.map { OCRTextLine(text: $0.0.string, box: $0.1) }
+                let words = candidates.enumerated().flatMap { index, item -> [RecognizedWord] in
+                    let candidate = item.0
                     var found: [RecognizedWord] = []
                     candidate.string.enumerateSubstrings(in: candidate.string.startIndex..., options: .byWords) { _, range, _, _ in
                         let text = String(candidate.string[range])
                         guard text.count > 1,
                               text.range(of: "^[A-Za-z]+(?:[-'][A-Za-z]+)*$", options: .regularExpression) != nil,
                               let box = try? candidate.boundingBox(for: range) else { return }
-                        found.append(RecognizedWord(text: text.lowercased(), boundingBox: box.boundingBox))
+                        found.append(RecognizedWord(text: text.lowercased(), boundingBox: box.boundingBox,
+                            sentence: OCRSentenceExtractor.sentence(lines: lines, lineIndex: index, wordRange: range)))
                     }
                     return found
                 }
                 let sorted = words.sorted(by: isBeforeInReadingOrder)
                 var seen = Set<String>()
-                continuation.resume(returning: sorted.filter { seen.insert($0.text).inserted })
+                continuation.resume(returning: sorted.filter { seen.insert($0.text + "\n" + $0.sentence).inserted })
             }
             request.recognitionLevel = .accurate
             request.recognitionLanguages = ["en-US", "en-GB"]

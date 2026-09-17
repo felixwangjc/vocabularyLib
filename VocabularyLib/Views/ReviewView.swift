@@ -5,10 +5,11 @@ struct ReviewView: View {
 
   var body: some View {
     TimelineView(.periodic(from: .now, by: 30)) { context in
-      let due = store.dueWords(at: context.date)
+      let due = store.plannedWords(at: context.date)
       ScrollViewReader { reader in
         ScrollView {
           VStack(alignment: .leading, spacing: 24) {
+            StudyPlanSummary(now: context.date)
             HStack {
               Label("待学习 \(due.count)", systemImage: "book")
               Spacer()
@@ -22,25 +23,25 @@ struct ReviewView: View {
             .id("reviewTop")
 
             if let entry = due.first {
-              Text(store.reviews[entry.id.uuidString] == nil ? "新词学习" : "到期复习")
+              Text(store.reviews[entry.id.uuidString]?.lastReviewedAt == nil ? "新词学习" : "到期复习")
                 .font(.caption.bold())
                 .foregroundStyle(AppTheme.accent)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(AppTheme.accentSoft, in: Capsule())
-              ReviewSwipeCard(entry: entry, remainingCount: due.count) { remembered in
-                store.review(entry, remembered: remembered)
+              ReviewExerciseView(entry: entry) { onAnswer in
+                ReviewSwipeCard(entry: entry, remainingCount: due.count, onAnswer: onAnswer)
               }
               .id(entry.id)
             } else {
               ContentUnavailableView(
-                store.entries.isEmpty ? "先添加一些单词" : "当前学习任务已完成",
+                store.entries.isEmpty ? "先添加一些单词" : (store.nextRetry(at: context.date) == nil ? "当前计划任务已完成" : "稍后继续重练"),
                 systemImage: store.entries.isEmpty ? "book.closed" : "checkmark.circle",
                 description: Text(
-                  store.entries.isEmpty ? "加入单词本的单词会自动进入学习计划。" : "到期的单词会自动出现，记得每天回来复习。")
+                  store.entries.isEmpty ? "加入单词本的单词会自动进入学习计划。" : "可调整每日上限继续学习，或明天回来。待重练单词到时会自动出现。")
               )
               if let next = store.entries.compactMap({ store.reviews[$0.id.uuidString]?.dueAt })
-                .min()
+                .filter({ $0 > context.date }).min()
               {
                 Text("下次复习：\(next.formatted(date: .abbreviated, time: .shortened))")
                   .foregroundStyle(.secondary)

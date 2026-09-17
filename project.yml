@@ -57,6 +57,7 @@ targets:
       - path: VocabularyLib/Models
       - path: VocabularyLib/Services
       - path: VocabularyLib/Stores
+      - path: VocabularyLib/Shared
       - path: VocabularyLib/Resources
         buildPhase: resources
         excludes:

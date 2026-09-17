@@ -4,6 +4,8 @@ import AppKit
 import ImageIO
 
 struct MacOCRView: View {
+    @EnvironmentObject private var store: VocabularyStore
+    @State private var addedEntry: WordEntry?
     let originalImage: NSImage
     let addWord: (String) async -> MacWordAdditionResult
     @Environment(\.dismiss) private var dismiss
@@ -14,6 +16,8 @@ struct MacOCRView: View {
     @State private var showsCropper = false
     @State private var isCropped = false
     @State private var version = 0
+    @State private var sourceBook = ""
+    @State private var sourcePage = ""
 
     init(image: NSImage, addWord: @escaping (String) async -> MacWordAdditionResult) {
         originalImage = image
@@ -34,6 +38,7 @@ struct MacOCRView: View {
                 Button("完成") { dismiss() }.keyboardShortcut(.cancelAction)
             }.padding()
             Divider()
+            OCRSourceFields(book: $sourceBook, page: $sourcePage).padding(.horizontal)
             HSplitView {
                 ZStack {
                     Color.black
@@ -57,6 +62,7 @@ struct MacOCRView: View {
                                         }.frame(maxWidth: .infinity, alignment: .leading).padding(12)
                                     }
                                     .buttonStyle(.plain)
+                                    .help(word.sentence)
                                     .background(state(for: word).color.opacity(0.09), in: RoundedRectangle(cornerRadius: 14))
                                     .disabled(state(for: word) == .adding || state(for: word) == .added || state(for: word) == .duplicate)
                                 }
@@ -67,6 +73,11 @@ struct MacOCRView: View {
             }
         }
         .task(id: version) { await recognize(currentVersion: version) }
+        .sheet(item: $addedEntry) { entry in
+            MacWordDetail(entry: entry)
+                .environmentObject(store)
+                .frame(minWidth: 580, minHeight: 520)
+        }
         .sheet(isPresented: $showsCropper) {
             if let image = workingImage.ocrCGImage {
                 MacImageCropView(cgImage: image) { apply($0, cropped: true) }
@@ -101,9 +112,17 @@ struct MacOCRView: View {
     private func add(_ word: MacRecognizedWord) {
         guard state(for: word) == .ready || state(for: word) == .failed else { return }
         states[word.id] = .adding
+        let context = ReadingContext(sentence: word.sentence, bookTitle: sourceBook, page: sourcePage)
         Task {
-            switch await addWord(word.text) {
-            case .added: states[word.id] = .added
+            let result: MacWordAdditionResult = store.contains(word.text) ? .duplicate : await addWord(word.text)
+            if case .failed = result { states[word.id] = .failed; return }
+            if let entry = store.entries.first(where: { $0.word.caseInsensitiveCompare(word.text) == .orderedSame }) {
+                store.saveReadingContext(context, for: entry.id)
+                addedEntry = entry
+            }
+            switch result {
+            case .added:
+                states[word.id] = .added
             case .duplicate: states[word.id] = .duplicate
             case .failed: states[word.id] = .failed
             }
@@ -118,7 +137,7 @@ private enum MacOCRWordState: Equatable {
         case .ready: return "点击加入"
         case .adding: return "加入中"
         case .added: return "已加入"
-        case .duplicate: return "已存在"
+        case .duplicate: return "已存在 · 语境已保存"
         case .failed: return "失败，点击重试"
         }
     }
@@ -146,21 +165,30 @@ private struct MacRecognizedWord: Identifiable {
     let id = UUID()
     let text: String
     let boundingBox: CGRect
+    let sentence: String
 }
 
 private enum MacTextRecognizer {
     static func recognizeWords(in image: CGImage) async -> [MacRecognizedWord] {
         await withCheckedContinuation { continuation in
             let request = VNRecognizeTextRequest { request, _ in
-                let words = (request.results as? [VNRecognizedTextObservation] ?? []).flatMap { observation -> [MacRecognizedWord] in
-                    guard let candidate = observation.topCandidates(1).first, candidate.confidence >= 0.6 else { return [] }
+                let candidates = (request.results as? [VNRecognizedTextObservation] ?? [])
+                    .sorted { $0.boundingBox.midY > $1.boundingBox.midY }
+                    .compactMap { observation -> (VNRecognizedText, CGRect)? in
+                        guard let candidate = observation.topCandidates(1).first, candidate.confidence >= 0.6 else { return nil }
+                        return (candidate, observation.boundingBox)
+                    }
+                let lines = candidates.map { OCRTextLine(text: $0.0.string, box: $0.1) }
+                let words = candidates.enumerated().flatMap { index, item -> [MacRecognizedWord] in
+                    let candidate = item.0
                     var result: [MacRecognizedWord] = []
                     candidate.string.enumerateSubstrings(in: candidate.string.startIndex..., options: .byWords) { _, range, _, _ in
                         let text = String(candidate.string[range])
                         guard text.count > 1,
                               text.range(of: "^[A-Za-z]+(?:[-'][A-Za-z]+)*$", options: .regularExpression) != nil,
                               let box = try? candidate.boundingBox(for: range) else { return }
-                        result.append(MacRecognizedWord(text: text.lowercased(), boundingBox: box.boundingBox))
+                        result.append(MacRecognizedWord(text: text.lowercased(), boundingBox: box.boundingBox,
+                            sentence: OCRSentenceExtractor.sentence(lines: lines, lineIndex: index, wordRange: range)))
                     }
                     return result
                 }
@@ -169,7 +197,7 @@ private enum MacTextRecognizer {
                         ? $0.boundingBox.minX < $1.boundingBox.minX : $0.boundingBox.midY > $1.boundingBox.midY
                 }
                 var seen = Set<String>()
-                continuation.resume(returning: words.filter { seen.insert($0.text).inserted })
+                continuation.resume(returning: words.filter { seen.insert($0.text + "\n" + $0.sentence).inserted })
             }
             request.recognitionLevel = .accurate
             request.recognitionLanguages = ["en-US", "en-GB"]

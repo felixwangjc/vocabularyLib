@@ -5,6 +5,7 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            StudyPlanSettings()
             Section {
                 HStack(spacing: 16) {
                     Image(systemName: "gearshape.2.fill")

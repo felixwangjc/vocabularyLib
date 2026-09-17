@@ -4,12 +4,43 @@ struct BadgeDefinition: Identifiable, Hashable {
     let id: String
     let name: String
     let detail: String
-    let cost: Int
     let assetName: String
+    let unlockRequirement: BadgeUnlockRequirement
+
+    init(id: String, name: String, detail: String, cost: Int, assetName: String) {
+        self.id = id
+        self.name = name
+        self.detail = detail
+        self.assetName = assetName
+        unlockRequirement = .points(cost)
+    }
+
+    init(id: String, name: String, detail: String, initial: String, requiredWordCount: Int, assetName: String) {
+        self.id = id
+        self.name = name
+        self.detail = detail
+        self.assetName = assetName
+        unlockRequirement = .initialWordCount(letter: initial, required: requiredWordCount)
+    }
+
+    var cost: Int {
+        guard case let .points(cost) = unlockRequirement else { return 0 }
+        return cost
+    }
+
+    var isAlphabetBadge: Bool {
+        if case .initialWordCount = unlockRequirement { return true }
+        return false
+    }
+}
+
+enum BadgeUnlockRequirement: Hashable {
+    case points(Int)
+    case initialWordCount(letter: String, required: Int)
 }
 
 enum BadgeCatalog {
-    static let all: [BadgeDefinition] = [
+    static let rewardBadges: [BadgeDefinition] = [
         .init(id: "first_step", name: "初芽", detail: "从今天开始，让学习生根。", cost: 20, assetName: "badge_first_step"),
         .init(id: "three_day_spark", name: "三日星火", detail: "小小坚持，已经点亮。", cost: 60, assetName: "badge_three_day_spark"),
         .init(id: "weekly_flame", name: "一周热焰", detail: "连续学习，热情正盛。", cost: 140, assetName: "badge_weekly_flame"),
@@ -41,6 +72,49 @@ enum BadgeCatalog {
         .init(id: "felt_owl", name: "毛毡智枭", detail: "温柔、耐心，也充满智慧。", cost: 900, assetName: "badge_felt_owl"),
         .init(id: "royal_archive", name: "皇家典藏", detail: "为珍贵词汇加冕并永久收藏。", cost: 1_000, assetName: "badge_royal_archive")
     ].sorted { $0.cost < $1.cost }
+
+    private static let letters = "abcdefghijklmnopqrstuvwxyz".map(String.init)
+
+    static let alphabetBadges: [BadgeDefinition] = letters.flatMap { letter in
+        let uppercase = letter.uppercased()
+        return [
+            BadgeDefinition(
+                id: "letter_lower_\(letter)",
+                name: "小写 \(letter)",
+                detail: "收集 50 个以 \(uppercase) 开头的单词。",
+                initial: letter,
+                requiredWordCount: 50,
+                assetName: "badge_letter_lower_\(letter)"
+            ),
+            BadgeDefinition(
+                id: "letter_upper_\(letter)",
+                name: "大写 \(uppercase)",
+                detail: "收集 100 个以 \(uppercase) 开头的单词。",
+                initial: letter,
+                requiredWordCount: 100,
+                assetName: "badge_letter_upper_\(letter)"
+            )
+        ]
+    }
+
+    static let all = rewardBadges + alphabetBadges
+
+    static func initialCounts(for words: [String]) -> [String: Int] {
+        words.reduce(into: [:]) { counts, word in
+            let trimmed = word.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard let first = trimmed.first, first.isASCII, first.isLetter else { return }
+            counts[String(first), default: 0] += 1
+        }
+    }
+
+    static func automaticallyEarnedBadgeIDs(for words: [String]) -> Set<String> {
+        let counts = initialCounts(for: words)
+        return Set(alphabetBadges.compactMap { badge in
+            guard case let .initialWordCount(letter, required) = badge.unlockRequirement,
+                  counts[letter, default: 0] >= required else { return nil }
+            return badge.id
+        })
+    }
 }
 
 struct DailyCheckInOutcome: Equatable {
@@ -85,6 +159,7 @@ struct BadgeProgress: Codable, Equatable {
     }
 
     mutating func redeem(_ badge: BadgeDefinition) -> Bool {
+        guard case .points = badge.unlockRequirement else { return false }
         guard !ownedBadgeIDs.contains(badge.id), points >= badge.cost else { return false }
         points -= badge.cost
         ownedBadgeIDs.insert(badge.id)

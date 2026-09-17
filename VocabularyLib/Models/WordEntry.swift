@@ -1,5 +1,54 @@
 import Foundation
 
+struct ReadingContext: Identifiable, Codable, Hashable {
+    var id = UUID()
+    var sentence: String
+    var bookTitle = ""
+    var page = ""
+    var note = ""
+    /// Snapshot of the exact sense selected for this occurrence, not just its POS.
+    var selectedMeaning: String?
+    var createdAt = Date()
+
+    func hasSameContent(as other: ReadingContext) -> Bool {
+        sentence == other.sentence && bookTitle == other.bookTitle && page == other.page
+    }
+}
+
+struct OCRTextLine {
+    let text: String
+    let box: CGRect
+}
+
+enum OCRSentenceExtractor {
+    /// Join nearby, aligned lines only. Never join across a column or a large paragraph gap.
+    /// Cropped/incomplete sentences remain editable OCR excerpts, not invented completions.
+    static func sentence(lines: [OCRTextLine], lineIndex: Int, wordRange: Range<String.Index>) -> String {
+        let line = lines[lineIndex]
+        let targetOffset = line.text.distance(from: line.text.startIndex, to: wordRange.lowerBound)
+        func adjacent(_ upper: OCRTextLine, _ lower: OCRTextLine) -> Bool {
+            let height = max(upper.box.height, lower.box.height)
+            let overlap = min(upper.box.maxX, lower.box.maxX) - max(upper.box.minX, lower.box.minX)
+            let gap = upper.box.minY - lower.box.maxY
+            return upper.box.midY > lower.box.midY && gap >= -height * 0.3 && gap < height * 1.5
+                && abs(upper.box.minX - lower.box.minX) < max(0.04, height * 2)
+                && overlap > min(upper.box.width, lower.box.width) * 0.5
+        }
+        var start = lineIndex
+        var end = lineIndex
+        while start > 0, lineIndex - start < 8, adjacent(lines[start - 1], lines[start]) { start -= 1 }
+        while end + 1 < lines.count, end - lineIndex < 8, adjacent(lines[end], lines[end + 1]) { end += 1 }
+        let preceding = lines[start..<lineIndex].map { $0.text + " " }.joined()
+        let paragraph = lines[start...end].map(\.text).joined(separator: " ")
+        let target = paragraph.index(paragraph.startIndex, offsetBy: preceding.count + targetOffset)
+        var result = line.text
+        paragraph.enumerateSubstrings(in: paragraph.startIndex..., options: .bySentences) { text, range, _, stop in
+            if range.contains(target), let text { result = text; stop = true }
+        }
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
 struct WordEntry: Identifiable, Codable, Hashable {
     let id: UUID
     let word: String
@@ -8,6 +57,8 @@ struct WordEntry: Identifiable, Codable, Hashable {
     let englishDefinition: String
     var example: String
     var meanings: [WordMeaning]?
+    var tags: [String]?
+    var readingContexts: [ReadingContext]?
     let audioURL: URL?
     let createdAt: Date
 

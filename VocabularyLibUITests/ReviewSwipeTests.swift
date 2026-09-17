@@ -2,6 +2,127 @@ import XCTest
 
 final class ReviewSwipeTests: XCTestCase {
     @MainActor
+    func testChineseSpellingExercise() { runObjectiveExercise(mode: "chineseSpelling", answer: "apple") }
+
+    @MainActor
+    func testListeningSpellingExercise() { runObjectiveExercise(mode: "listeningSpelling", answer: "apple") }
+
+    @MainActor
+    func testMissingLettersExercise() { runObjectiveExercise(mode: "missingLetters", answer: "pl") }
+
+    @MainActor
+    private func runObjectiveExercise(mode: String, answer: String) {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .portrait
+        let app = XCUIApplication()
+        app.launchEnvironment["REVIEW_UI_TEST_ID"] = UUID().uuidString
+        app.launchEnvironment["EXERCISE_UI_TEST_MODE"] = mode
+        app.launchEnvironment["READING_CONTEXT_UI_TEST"] = "1"
+        if mode == "missingLetters" { app.launchArguments += ["-AppleInterfaceStyle", "Dark"] }
+        app.launch()
+        openReview(app)
+        let field = app.textFields["exerciseAnswer"]
+        if mode == "missingLetters" {
+            XCTAssertTrue(app.buttons["candidate-p"].waitForExistence(timeout: 5))
+            XCTAssertFalse(field.exists)
+            XCTAssertFalse(app.keyboards.firstMatch.exists)
+            XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "candidate-")).count, 10)
+        } else { XCTAssertTrue(field.waitForExistence(timeout: 5)) }
+        XCTAssertFalse(app.staticTexts["apple"].exists)
+        let contexts = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "阅读语境")).firstMatch
+        XCTAssertFalse(contexts.exists)
+        if mode == "missingLetters" {
+            for letter in answer { app.buttons["candidate-\(letter)"].tap() }
+            XCTAssertEqual(app.buttons["missingSlot-0"].value as? String, "p")
+            XCTAssertEqual(app.buttons["missingSlot-1"].value as? String, "l")
+            assertLetterAlignment(app)
+            app.buttons["missingSlot-0"].tap()
+            app.buttons["清除当前格"].tap()
+            XCTAssertFalse(app.buttons["exerciseCheck"].isEnabled)
+            app.buttons["candidate-p"].tap()
+            XCTAssertFalse(app.keyboards.firstMatch.exists)
+            let choicesShot = XCTAttachment(screenshot: app.screenshot())
+            choicesShot.name = "Inline blanks and ten letter choices"
+            choicesShot.lifetime = .keepAlways
+            add(choicesShot)
+            let check = app.buttons["exerciseCheck"]
+            if !check.isHittable { app.swipeUp() }
+            check.tap()
+        } else {
+            field.tap()
+            field.typeText(answer + "\n")
+        }
+        XCTAssertTrue(app.staticTexts["回答正确"].waitForExistence(timeout: 5))
+        if mode == "missingLetters" { assertLetterAlignment(app) }
+        XCTAssertTrue(contexts.exists)
+        let next = app.buttons["exerciseContinue"]
+        if !next.isHittable { app.swipeUp() }
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "Exercise-\(mode)"
+        shot.lifetime = .keepAlways
+        add(shot)
+        next.tap()
+        XCTAssertTrue(app.staticTexts["今日已学 1 词"].waitForExistence(timeout: 5))
+        if mode == "missingLetters" { XCTAssertTrue(app.buttons["missingSlot-0"].exists) }
+        else { XCTAssertTrue(app.textFields["exerciseAnswer"].exists) }
+    }
+
+    @MainActor
+    private func assertLetterAlignment(_ app: XCUIApplication) {
+        let cells = [app.staticTexts["fixedLetter-0"], app.buttons["missingSlot-0"],
+                     app.staticTexts["fixedLetter-2"], app.buttons["missingSlot-1"], app.staticTexts["fixedLetter-4"]]
+        // Candidate taps can auto-scroll the card. Measure after that movement settles.
+        let aligned = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            let frames = cells.map(\.frame)
+            return frames.allSatisfy { abs($0.midY - frames[0].midY) <= 1 }
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [aligned], timeout: 5), .completed)
+        let frames = cells.map(\.frame)
+        let step = frames[1].midX - frames[0].midX
+        for index in 1..<frames.count {
+            XCTAssertEqual(frames[index].midY, frames[0].midY, accuracy: 1)
+            XCTAssertEqual(frames[index].midX - frames[index - 1].midX, step, accuracy: 1)
+            XCTAssertEqual(frames[index].width, frames[0].width, accuracy: 1)
+            XCTAssertEqual(frames[index].height, frames[0].height, accuracy: 1)
+        }
+    }
+
+    @MainActor
+    func testWordSearchAndPlanSettings() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .portrait
+        let app = XCUIApplication()
+        app.launchEnvironment["REVIEW_UI_TEST_ID"] = UUID().uuidString
+        app.launch()
+        app.tabBars.buttons["单词本"].tap()
+        let search = app.textFields["wordSearch"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("apple")
+        XCTAssertTrue(app.staticTexts["apple"].exists)
+        XCTAssertFalse(app.staticTexts["book"].exists)
+        app.buttons["清空搜索"].tap()
+        search.typeText("\n")
+        XCTAssertTrue(app.staticTexts["book"].exists)
+        let searchShot = XCTAttachment(screenshot: app.screenshot())
+        searchShot.name = "Word search and filters"
+        searchShot.lifetime = .keepAlways
+        add(searchShot)
+        openReview(app)
+        app.buttons["调整计划"].tap()
+        let stepper = app.steppers["dailyNewWordLimit"]
+        XCTAssertTrue(stepper.waitForExistence(timeout: 5))
+        stepper.buttons.firstMatch.tap()
+        app.buttons["完成"].tap()
+        app.buttons["调整计划"].tap()
+        XCTAssertTrue(app.staticTexts["每天新词：9 个"].exists)
+        let planShot = XCTAttachment(screenshot: app.screenshot())
+        planShot.name = "Daily study plan settings"
+        planShot.lifetime = .keepAlways
+        add(planShot)
+    }
+
+    @MainActor
     func testSwipeDirectionsCancellationAndPersistence() throws {
         XCUIDevice.shared.orientation = .portrait
         try runReviewScenario()
@@ -55,14 +176,14 @@ final class ReviewSwipeTests: XCTestCase {
         add(screenshot)
 
         app.buttons["reviewRemembered"].tap()
-        XCTAssertTrue(app.staticTexts["当前学习任务已完成"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["稍后继续重练"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["今日已学 3 词"].exists)
 
         // Relaunch the same isolated store: each answer is persisted exactly once.
         app.terminate()
         app.launch()
         openReview(app)
-        XCTAssertTrue(app.staticTexts["当前学习任务已完成"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["稍后继续重练"].waitForExistence(timeout: 5))
         if app.buttons["完成"].exists { app.buttons["完成"].tap() }
         if app.tabBars.buttons["单词本"].exists {
             app.tabBars.buttons["单词本"].tap()

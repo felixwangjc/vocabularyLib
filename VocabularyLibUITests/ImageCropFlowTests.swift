@@ -2,6 +2,41 @@ import XCTest
 
 final class ImageCropFlowTests: XCTestCase {
     @MainActor
+    func testOCRSavesContextForExistingWordAndEditsNotes() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["OCR_CROP_UI_TEST"] = "1"
+        app.launchEnvironment["REVIEW_UI_TEST_ID"] = UUID().uuidString
+        app.launch()
+        let word = app.descendants(matching: .any).matching(identifier: "ocrWord-apple").firstMatch
+        XCTAssertTrue(word.waitForExistence(timeout: 15))
+        word.press(forDuration: 2.3)
+        let contexts = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "阅读语境")).firstMatch
+        for _ in 0..<5 {
+            if contexts.exists && contexts.isHittable { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(contexts.exists)
+        contexts.tap()
+        let edit = app.buttons["editReadingContext"].firstMatch
+        for _ in 0..<4 {
+            if edit.isHittable { break }
+            app.swipeUp()
+        }
+        edit.tap()
+        let book = app.textFields["sourceBookTitle"]
+        XCTAssertTrue(book.waitForExistence(timeout: 5))
+        book.tap(); book.typeText("My Reader")
+        app.textFields["sourcePage"].tap(); app.textFields["sourcePage"].typeText("12")
+        app.buttons["保存"].tap()
+        XCTAssertTrue(app.staticTexts["My Reader · 第 12 页"].waitForExistence(timeout: 5))
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "OCR reading context"
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    @MainActor
     func testCropAndRestoreOriginalImage() {
         let app = XCUIApplication()
         app.launchEnvironment["OCR_CROP_UI_TEST"] = "1"
