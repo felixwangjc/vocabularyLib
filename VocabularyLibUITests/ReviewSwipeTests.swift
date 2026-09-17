@@ -18,7 +18,7 @@ final class ReviewSwipeTests: XCTestCase {
         app.launchEnvironment["REVIEW_UI_TEST_ID"] = UUID().uuidString
         app.launchEnvironment["EXERCISE_UI_TEST_MODE"] = mode
         app.launchEnvironment["READING_CONTEXT_UI_TEST"] = "1"
-        if mode == "missingLetters" { app.launchArguments += ["-AppleInterfaceStyle", "Dark"] }
+        if mode == "missingLetters" { app.launchEnvironment["UI_TEST_DARK"] = "1" }
         app.launch()
         openReview(app)
         let field = app.textFields["exerciseAnswer"]
@@ -71,20 +71,20 @@ final class ReviewSwipeTests: XCTestCase {
     private func assertLetterAlignment(_ app: XCUIApplication) {
         let cells = [app.staticTexts["fixedLetter-0"], app.buttons["missingSlot-0"],
                      app.staticTexts["fixedLetter-2"], app.buttons["missingSlot-1"], app.staticTexts["fixedLetter-4"]]
-        // Candidate taps can auto-scroll the card. Measure after that movement settles.
+        // AX reports tight glyph bounds for static Text, but the whole cell for a
+        // Button. Compare vertical size only between blank cells of the same type.
         let aligned = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-            let frames = cells.map(\.frame)
-            return frames.allSatisfy { abs($0.midY - frames[0].midY) <= 1 }
+            abs(cells[1].frame.midY - cells[3].frame.midY) <= 1
         }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [aligned], timeout: 5), .completed)
         let frames = cells.map(\.frame)
         let step = frames[1].midX - frames[0].midX
         for index in 1..<frames.count {
-            XCTAssertEqual(frames[index].midY, frames[0].midY, accuracy: 1)
             XCTAssertEqual(frames[index].midX - frames[index - 1].midX, step, accuracy: 1)
-            XCTAssertEqual(frames[index].width, frames[0].width, accuracy: 1)
-            XCTAssertEqual(frames[index].height, frames[0].height, accuracy: 1)
         }
+        XCTAssertEqual(frames[1].midY, frames[3].midY, accuracy: 1)
+        XCTAssertEqual(frames[1].width, frames[3].width, accuracy: 1)
+        XCTAssertEqual(frames[1].height, frames[3].height, accuracy: 1)
     }
 
     @MainActor

@@ -41,6 +41,9 @@ struct VocabularyLibApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                #if DEBUG
+                .preferredColorScheme(ProcessInfo.processInfo.environment["UI_TEST_DARK"] == "1" ? .dark : nil)
+                #endif
                 .environmentObject(store)
                 .tint(AppTheme.accent)
                 .task { await store.upgradeLegacyMeanings() }
