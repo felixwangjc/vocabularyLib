@@ -1,6 +1,119 @@
 import SwiftUI
 import UserNotifications
 
+/// The badge catalog is bounded (82 items). Measure its entire height instead
+/// of revising lazy estimates underneath the check-in header while scrolling.
+struct BadgeCatalogLayout: Layout {
+    var minimumColumnWidth: CGFloat
+    var spacing: CGFloat
+
+    private func measurements(width: CGFloat, subviews: Subviews) -> (columns: Int, cellWidth: CGFloat, heights: [CGFloat]) {
+        let columns = max(1, Int((width + spacing) / (minimumColumnWidth + spacing)))
+        let cellWidth = max(0, (width - CGFloat(columns - 1) * spacing) / CGFloat(columns))
+        var heights: [CGFloat] = []
+        for index in subviews.indices {
+            let height = subviews[index].sizeThatFits(ProposedViewSize(width: cellWidth, height: nil)).height
+            let row = index / columns
+            if row == heights.count { heights.append(height) }
+            else { heights[row] = max(heights[row], height) }
+        }
+        return (columns, cellWidth, heights)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? minimumColumnWidth
+        let metrics = measurements(width: width, subviews: subviews)
+        return CGSize(width: width, height: metrics.heights.reduce(0, +) + CGFloat(max(0, metrics.heights.count - 1)) * spacing)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let metrics = measurements(width: bounds.width, subviews: subviews)
+        var y = bounds.minY
+        for index in subviews.indices {
+            let column = index % metrics.columns
+            let row = index / metrics.columns
+            if column == 0 && row > 0 { y += metrics.heights[row - 1] + spacing }
+            subviews[index].place(at: CGPoint(x: bounds.minX + CGFloat(column) * (metrics.cellWidth + spacing), y: y),
+                                  anchor: .topLeading,
+                                  proposal: ProposedViewSize(width: metrics.cellWidth, height: metrics.heights[row]))
+        }
+    }
+}
+
+struct CheckInLifecycle: ViewModifier {
+    @EnvironmentObject private var store: VocabularyStore
+    @Environment(\.scenePhase) private var phase
+    func body(content: Content) -> some View {
+        content.task(id: phase) {
+            guard phase == .active else { return }
+            while !Task.isCancelled {
+                store.checkInIfNeeded()
+                // Also handles an app left open across midnight.
+                do { try await Task.sleep(nanoseconds: 30_000_000_000) }
+                catch { return }
+            }
+        }
+    }
+}
+
+struct CheckInWall: View {
+    @EnvironmentObject private var store: VocabularyStore
+    private let calendar = Calendar.current
+    private var days: [Date] {
+        let today = calendar.startOfDay(for: .now)
+        return (-29...0).compactMap { calendar.date(byAdding: .day, value: $0, to: today) }
+    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label("打卡墙 · 最近 30 天", systemImage: "calendar.badge.checkmark").font(.title3.bold())
+            Text("累计 \(store.badgeProgress.totalCheckInDays) 天 · 连续 \(store.badgeProgress.currentStreak) 天 · 最长连续 \(store.badgeProgress.longestStreak) 天")
+                .font(.subheadline).foregroundStyle(.secondary)
+            // Only 30 cells: measure all five rows eagerly. A lazy calendar and
+            // a sibling lazy badge grid can change their height as they scroll
+            // offscreen, moving the header and causing a layout feedback loop.
+            let dates = days
+            VStack(spacing: 8) {
+                ForEach(0..<5, id: \.self) { row in
+                    HStack(spacing: 6) {
+                        ForEach(0..<7, id: \.self) { column in
+                            let index = row * 7 + column
+                            if index < dates.count {
+                                dayCell(dates[index])
+                                    .accessibilityIdentifier("checkInDay-\(index)")
+                            } else {
+                                Color.clear.frame(maxWidth: .infinity, minHeight: 1)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                    }
+                }
+            }
+            Text("✓ 已打卡　○ 未打卡　⊖ 历史未记录；边框标记今天")
+                .font(.caption).foregroundStyle(.secondary)
+            Text("每天 5 分；累计第 7 / 30 / 100 / 365 天分别获得 10 / 20 / 40 / 80 分，之后每满 365 天奖励再翻倍。里程碑积分替代当天的 5 分。")
+                .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(18).frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 22))
+    }
+
+    private func dayCell(_ day: Date) -> some View {
+        let checked = store.badgeProgress.didCheckIn(on: day)
+        let unknown = !checked && day < calendar.startOfDay(for: store.badgeProgress.historyStartedAt ?? .now)
+        return VStack(spacing: 5) {
+            Text(day, format: .dateTime.month(.twoDigits).day(.twoDigits)).font(.caption2)
+            Image(systemName: checked ? "checkmark.circle.fill" : unknown ? "minus.circle" : "circle")
+                .foregroundStyle(checked ? Color.accentColor : Color.secondary)
+        }
+        .frame(maxWidth: .infinity).padding(.vertical, 9)
+        .background(checked ? Color.accentColor.opacity(0.14) : Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 10))
+        .overlay { RoundedRectangle(cornerRadius: 10).strokeBorder(calendar.isDateInToday(day) ? Color.accentColor : .clear) }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(day.formatted(date: .abbreviated, time: .omitted))，\(checked ? "已打卡" : unknown ? "未记录" : "未打卡")")
+    }
+}
+
 struct OCRSourceFields: View {
     @Binding var book: String
     @Binding var page: String

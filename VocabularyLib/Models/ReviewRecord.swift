@@ -154,6 +154,21 @@ struct ReviewRecord: Codable {
         return exercise
     }
 
+    mutating func replaceListeningExercise(word: String, id: UUID) -> WordExercise? {
+        guard let pending = pendingExercise, pending.id == id,
+              pending.mode == .listeningSpelling, pending.correct == nil else { return nil }
+        var eligible = ExerciseMode.allCases.filter { $0 != .listeningSpelling }
+        if word.filter({ $0.isASCII && $0.isLetter }).count < 2 { eligible.removeAll { $0 == .missingLetters } }
+        var used = usedExerciseModes ?? []
+        var candidates = eligible.filter { !used.contains($0) }
+        if candidates.isEmpty { used = []; candidates = eligible.filter { $0 != lastExerciseMode } }
+        usedExerciseModes = used + [.listeningSpelling]
+        let replacement = WordExercise(mode: candidates.randomElement() ?? .recognition,
+                                       word: word, excluding: lastMissingIndices ?? [])
+        pendingExercise = replacement
+        return replacement
+    }
+
     mutating func finishExercise(_ exercise: WordExercise, success: Bool) {
         if exercise.mode == .missingLetters { lastMissingIndices = exercise.missingIndices }
         var score = exerciseScores?[exercise.mode.rawValue] ?? SkillScore()

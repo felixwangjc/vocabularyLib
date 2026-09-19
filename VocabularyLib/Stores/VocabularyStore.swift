@@ -100,6 +100,14 @@ final class VocabularyStore: ObservableObject {
         return exercise
     }
 
+    func replaceListeningExercise(for entry: WordEntry, id: UUID) -> WordExercise? {
+        guard var record = reviews[entry.id.uuidString],
+              let replacement = record.replaceListeningExercise(word: entry.word, id: id) else { return nil }
+        reviews[entry.id.uuidString] = record
+        persistReviews()
+        return replacement
+    }
+
     func gradeExercise(for entry: WordEntry, id: UUID, answer: String) -> WordExercise? {
         guard var record = reviews[entry.id.uuidString], var exercise = record.pendingExercise,
               exercise.id == id, exercise.mode != .recognition else { return nil }
@@ -125,8 +133,15 @@ final class VocabularyStore: ObservableObject {
 
     @discardableResult
     func checkInIfNeeded(at now: Date = .now) -> DailyCheckInOutcome {
-        let outcome = badgeProgress.checkIn(at: now)
-        if outcome.didCheckIn { saveBadgeProgress() }
+        let previous = badgeProgress
+        var updated = previous
+        let outcome = updated.checkIn(at: now)
+        // Do not publish an unchanged value on every foreground timer tick.
+        if previous != updated {
+            badgeProgress = updated
+            saveBadgeProgress()
+        }
+        if outcome.didCheckIn { latestCheckInOutcome = outcome }
         return outcome
     }
 

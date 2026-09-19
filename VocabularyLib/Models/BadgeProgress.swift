@@ -132,9 +132,33 @@ struct BadgeProgress: Codable, Equatable {
     var lastCheckInAt: Date?
     var lastCheckInPoints = 0
     var ownedBadgeIDs: Set<String> = []
+    // Optional fields keep older saved progress decodable. Never invent old dates.
+    var checkInDates: [Date]?
+    var historyStartedAt: Date?
+
+    static func reward(for day: Int) -> Int {
+        switch day {
+        case 7: return 10
+        case 30: return 20
+        case 100: return 40
+        case let day where day > 0 && day.isMultiple(of: 365):
+            return 80 * (1 << min(day / 365 - 1, 20))
+        default: return 5
+        }
+    }
+
+    func didCheckIn(on date: Date, calendar: Calendar = .current) -> Bool {
+        (checkInDates ?? []).contains { calendar.isDate($0, inSameDayAs: date) }
+            || lastCheckInAt.map { calendar.isDate($0, inSameDayAs: date) } == true
+    }
 
     mutating func checkIn(at now: Date, calendar: Calendar = .current) -> DailyCheckInOutcome {
-        if let lastCheckInAt, calendar.isDate(lastCheckInAt, inSameDayAs: now) {
+        if checkInDates == nil {
+            checkInDates = lastCheckInAt.map { [$0] } ?? []
+            historyStartedAt = now
+        }
+        if didCheckIn(on: now, calendar: calendar)
+            || lastCheckInAt.map({ calendar.startOfDay(for: now) < calendar.startOfDay(for: $0) }) == true {
             return DailyCheckInOutcome(awardedPoints: 0, streak: currentStreak)
         }
 
@@ -147,14 +171,14 @@ struct BadgeProgress: Codable, Equatable {
             currentStreak = 1
         }
 
-        // 每日 20 分；连续签到每天多 5 分，第 7 天起封顶为 50 分。
-        let reward = 20 + min(max(currentStreak - 1, 0) * 5, 30)
+        let reward = Self.reward(for: totalCheckInDays + 1)
         points += reward
         totalPointsEarned += reward
         totalCheckInDays += 1
         longestStreak = max(longestStreak, currentStreak)
         lastCheckInAt = now
         lastCheckInPoints = reward
+        checkInDates?.append(now)
         return DailyCheckInOutcome(awardedPoints: reward, streak: currentStreak)
     }
 

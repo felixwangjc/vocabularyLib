@@ -7,6 +7,7 @@ struct VocabularyLibMacApp: App {
     var body: some Scene {
         WindowGroup {
             MacContentView()
+                .modifier(CheckInLifecycle())
                 .environmentObject(store)
                 .tint(MacTheme.accent)
                 .task { await store.upgradeLegacyMeanings() }

@@ -397,7 +397,6 @@ private struct MacBadgeView: View {
     @EnvironmentObject private var store: VocabularyStore
     @State private var message: MacAlert?
     @State private var filter: MacBadgeFilter = .all
-    private let columns = [GridItem(.adaptive(minimum: 190), spacing: 16)]
 
     var body: some View {
         ScrollView {
@@ -414,10 +413,11 @@ private struct MacBadgeView: View {
                     }
                     .padding(18).frame(maxWidth: .infinity, alignment: .leading).macCard(MacTheme.peach, cornerRadius: 20)
                 }
+                CheckInWall()
                 Picker("筛选徽章", selection: $filter) {
                     ForEach(MacBadgeFilter.allCases) { option in Text(option.title).tag(option) }
                 }.pickerStyle(.segmented).frame(maxWidth: 520)
-                LazyVGrid(columns: columns, spacing: 16) {
+                BadgeCatalogLayout(minimumColumnWidth: 190, spacing: 16) {
                     ForEach(visibleBadges) { badge in
                         card(badge)
                     }

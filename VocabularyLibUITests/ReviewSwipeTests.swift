@@ -2,6 +2,47 @@ import XCTest
 
 final class ReviewSwipeTests: XCTestCase {
     @MainActor
+    func testCheckInWallRemainsStableAfterScrolling() {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .portrait
+        let app = XCUIApplication()
+        app.launchEnvironment["REVIEW_UI_TEST_ID"] = UUID().uuidString
+        app.launchEnvironment["UI_TEST_DARK"] = "1"
+        app.launch()
+        app.tabBars.buttons["徽章"].tap()
+        let title = app.staticTexts["今日打卡完成"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        let initialY = title.frame.minY
+        let scroll = app.scrollViews.firstMatch
+        let wallTitle = app.staticTexts["打卡墙 · 最近 30 天"]
+        var previousY = wallTitle.frame.minY
+        // Short drags cross the header/catalog boundary without returning to
+        // the top. A correct final position alone cannot catch mid-scroll jumps.
+        for _ in 0..<8 {
+            scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.65))
+                .press(forDuration: 0.1, thenDragTo: scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.57)))
+            let currentY = wallTitle.frame.minY
+            XCTAssertLessThanOrEqual(currentY, previousY + 3, "Calendar moved backwards during upward scrolling")
+            XCTAssertEqual(app.staticTexts.matching(NSPredicate(format: "label == %@", "打卡墙 · 最近 30 天")).count, 1)
+            previousY = currentY
+        }
+        for _ in 0..<5 { scroll.swipeDown() }
+        for _ in 0..<3 {
+            scroll.swipeUp()
+            scroll.swipeUp()
+            for _ in 0..<5 { scroll.swipeDown() }
+            XCTAssertTrue(title.isHittable)
+            XCTAssertEqual(title.frame.minY, initialY, accuracy: 3)
+            XCTAssertTrue(app.staticTexts["打卡墙 · 最近 30 天"].isHittable)
+            XCTAssertTrue(app.descendants(matching: .any)["checkInDay-0"].isHittable)
+        }
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "Check-in wall after repeated scrolling"
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    @MainActor
     func testChineseSpellingExercise() { runObjectiveExercise(mode: "chineseSpelling", answer: "apple") }
 
     @MainActor

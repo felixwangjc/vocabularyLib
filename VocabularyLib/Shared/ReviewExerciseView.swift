@@ -66,6 +66,23 @@ struct ReviewExerciseView<RecallCard: View>: View {
                     Label("播放发音", systemImage: "speaker.wave.2.fill")
                         .frame(maxWidth: .infinity).padding(.vertical, 16)
                 }.buttonStyle(.borderedProminent)
+                if exercise.correct == nil {
+                    Button {
+                        guard let replacement = store.replaceListeningExercise(for: entry, id: exercise.id) else { return }
+                        speech.stop()
+                        answerFocused = false
+                        answer = ""
+                        letters = Array(repeating: "", count: replacement.missingIndices.count)
+                        activeBlank = 0
+                        self.exercise = replacement
+                    } label: {
+                        Label("不方便听声音？换种方式复习", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("switchExerciseMode")
+                    Text("切换不计错，也不消耗今日复习次数。")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
                 Text("只接受当前收录词的拼写；同音词有歧义时，可查看答案后继续学习。")
                     .font(.caption).foregroundStyle(.secondary)
             } else {

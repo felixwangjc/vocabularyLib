@@ -4,17 +4,17 @@ struct BadgeView: View {
     @EnvironmentObject private var store: VocabularyStore
     @State private var message: BadgeMessage?
     @State private var filter: BadgeFilter = .all
-    private let columns = [GridItem(.adaptive(minimum: 155), spacing: 14)]
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 progressHeader
+                CheckInWall()
                 Picker("筛选徽章", selection: $filter) {
                     ForEach(BadgeFilter.allCases) { option in Text(option.title).tag(option) }
                 }
                 .pickerStyle(.segmented)
-                LazyVGrid(columns: columns, spacing: 14) {
+                BadgeCatalogLayout(minimumColumnWidth: 155, spacing: 14) {
                     ForEach(visibleBadges) { badge in
                         badgeCard(badge)
                     }
@@ -45,7 +45,7 @@ struct BadgeView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("今日打卡完成").font(.title2.bold())
-                    Text("每天首次打开 App 自动获得积分，连续使用奖励更高。")
+                    Text("每天首次打开获得 5 分，累计打卡解锁翻倍里程碑奖励。")
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer()
