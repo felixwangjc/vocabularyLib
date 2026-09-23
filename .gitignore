@@ -37,3 +37,4 @@ Secrets.xcconfig
 __pycache__/
 *.py[cod]
 .venv/
+.admin-access.txt

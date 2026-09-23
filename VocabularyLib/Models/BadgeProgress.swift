@@ -152,33 +152,50 @@ struct BadgeProgress: Codable, Equatable {
             || lastCheckInAt.map { calendar.isDate($0, inSameDayAs: date) } == true
     }
 
+    /// Dates, not legacy counters, are the source of truth for both the wall
+    /// and statistics. Keep balances and earned badges unchanged when repairing.
+    private mutating func reconcileCheckInStatistics(at now: Date, calendar: Calendar) {
+        var recorded = checkInDates ?? []
+        if let lastCheckInAt, !recorded.contains(where: { calendar.isDate($0, inSameDayAs: lastCheckInAt) }) {
+            recorded.append(lastCheckInAt)
+        }
+        if recorded != checkInDates { checkInDates = recorded }
+        let days = Set(recorded.map { calendar.startOfDay(for: $0) }).sorted()
+        totalCheckInDays = days.count
+        var run = 0
+        var longest = 0
+        var previous: Date?
+        for day in days {
+            run = previous.map { calendar.dateComponents([.day], from: $0, to: day).day == 1 } == true ? run + 1 : 1
+            longest = max(longest, run)
+            previous = day
+        }
+        longestStreak = longest
+        let today = calendar.startOfDay(for: now)
+        let age = days.last.flatMap { calendar.dateComponents([.day], from: $0, to: today).day }
+        currentStreak = age == 0 || age == 1 ? run : 0
+    }
+
     mutating func checkIn(at now: Date, calendar: Calendar = .current) -> DailyCheckInOutcome {
         if checkInDates == nil {
             checkInDates = lastCheckInAt.map { [$0] } ?? []
             historyStartedAt = now
         }
+        // Run even on an already checked-in day, so existing installations are
+        // repaired immediately without awarding another daily reward.
+        reconcileCheckInStatistics(at: now, calendar: calendar)
         if didCheckIn(on: now, calendar: calendar)
             || lastCheckInAt.map({ calendar.startOfDay(for: now) < calendar.startOfDay(for: $0) }) == true {
             return DailyCheckInOutcome(awardedPoints: 0, streak: currentStreak)
         }
 
-        if let lastCheckInAt {
-            let lastDay = calendar.startOfDay(for: lastCheckInAt)
-            let today = calendar.startOfDay(for: now)
-            currentStreak = calendar.dateComponents([.day], from: lastDay, to: today).day == 1
-                ? currentStreak + 1 : 1
-        } else {
-            currentStreak = 1
-        }
-
         let reward = Self.reward(for: totalCheckInDays + 1)
         points += reward
         totalPointsEarned += reward
-        totalCheckInDays += 1
-        longestStreak = max(longestStreak, currentStreak)
         lastCheckInAt = now
         lastCheckInPoints = reward
         checkInDates?.append(now)
+        reconcileCheckInStatistics(at: now, calendar: calendar)
         return DailyCheckInOutcome(awardedPoints: reward, streak: currentStreak)
     }
 

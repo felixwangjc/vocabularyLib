@@ -1,0 +1,50 @@
+[
+  {
+    "phrase": "Honestly, valid.",
+    "meaningZh": "完全合理；我完全能理解。",
+    "category": "affirmation",
+    "usageNoteZh": "非正式口语，用来表示理解或认可对方的选择。",
+    "scenarios": [
+      {
+        "id": "after-work-ramen",
+        "titleZh": "累了一天，只想在家休息",
+        "lines": [
+          {
+            "id": "l1",
+            "speaker": "A",
+            "en": "I skipped the after-party just to eat ramen and watch anime in bed.",
+            "zh": "我没去续摊，就想窝在床上吃拉面、看动漫。",
+            "isTarget": false
+          },
+          {
+            "id": "l2",
+            "speaker": "B",
+            "en": "After a twelve-hour shift? Honestly, valid.",
+            "zh": "上了十二个小时的班？完全能理解。",
+            "isTarget": true
+          },
+          {
+            "id": "l3",
+            "speaker": "A",
+            "en": "I thought you'd call me boring.",
+            "zh": "我还以为你会说我无聊。",
+            "isTarget": false
+          },
+          {
+            "id": "l4",
+            "speaker": "B",
+            "en": "Nah, protect your peace at all costs.",
+            "zh": "不会，让自己舒心最重要。",
+            "isTarget": false
+          }
+        ],
+        "illustration": {
+          "localFile": "assets/after-work-ramen.jpg",
+          "altZh": "一位下班后的年轻人窝在床上吃拉面、看动漫，朋友表示理解。"
+        }
+      }
+    ],
+    "id": "honestly-valid",
+    "revision": "r1"
+  }
+]

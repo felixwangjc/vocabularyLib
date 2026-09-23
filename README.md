@@ -73,6 +73,14 @@ swiftc VocabularyLib/Models/WordEntry.swift VocabularyLib/Services/LocalDictiona
 - 当前为本地版，已移除 CloudKit。保留的 iCloud 参考见 `ICLOUD_SETUP.md`。
 - 本地词典说明见 `LOCAL_DICTIONARY.md`。
 
+## 每日俚语后端
+
+GCP 服务代码、内容发布脚本和部署说明见 [backend/README.md](backend/README.md)。
+存储与 API 设计见 [DAILY_SLANG_DESIGN.md](DAILY_SLANG_DESIGN.md)。
+当前 SwiftUI App 尚未接入此接口。
+
+内容管理后台已部署，支持标题、情景对话与插图增删改；使用说明见 [backend/ADMIN.md](backend/ADMIN.md)。
+
 ## License
 
 ECDICT 数据遵循上游 LICENSE，WordNet 许可证随 App 分发并可在设置中查看。

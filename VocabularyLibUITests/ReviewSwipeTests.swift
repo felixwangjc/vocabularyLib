@@ -2,6 +2,50 @@ import XCTest
 
 final class ReviewSwipeTests: XCTestCase {
     @MainActor
+    func testDailySlangSplashOnlyOncePerDay() throws {
+        try runDailySlangSplash(dark: false)
+    }
+
+    @MainActor
+    func testDailySlangSplashDarkMode() throws {
+        try runDailySlangSplash(dark: true)
+    }
+
+    @MainActor
+    private func runDailySlangSplash(dark: Bool) throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["REVIEW_UI_TEST_ID"] = UUID().uuidString
+        if dark { app.launchEnvironment["UI_TEST_DARK"] = "1" }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        let today = formatter.string(from: .now)
+        let end = ISO8601DateFormatter().string(from: calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: .now))!)
+        app.launchEnvironment["SLANG_UI_TEST_PAYLOAD"] = """
+        {"schemaVersion":1,"dailyId":"\(today)","nextRefreshAt":"\(end)","slang":{"id":"valid","phrase":"Honestly, valid.","meaningZh":"完全合理","usageNoteZh":"非正式口语"},"scenario":{"titleZh":"下班休息","lines":[{"id":"a","speaker":"A","en":"Honestly, valid.","zh":"完全合理","isTarget":true}],"illustration":{"url":"https://example.invalid/test.jpg","altZh":"测试插图"}}}
+        """
+        app.launch()
+        let close = app.buttons["关闭每日俚语"]
+        XCTAssertTrue(close.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.staticTexts["Honestly, valid."].exists)
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "Daily slang splash"
+        shot.lifetime = .keepAlways
+        add(shot)
+        close.tap()
+        XCTAssertFalse(close.exists)
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["单词本"].waitForExistence(timeout: 8))
+        XCTAssertFalse(close.exists)
+    }
+
+    @MainActor
     func testCheckInWallRemainsStableAfterScrolling() {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .portrait

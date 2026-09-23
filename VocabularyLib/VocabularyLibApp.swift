@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct VocabularyLibApp: App {
     @StateObject private var store = makeStore()
+    @StateObject private var dailySlang = DailySlangStore()
 
     private static func makeStore() -> VocabularyStore {
         #if DEBUG
@@ -45,6 +46,7 @@ struct VocabularyLibApp: App {
                 .preferredColorScheme(ProcessInfo.processInfo.environment["UI_TEST_DARK"] == "1" ? .dark : nil)
                 #endif
                 .modifier(CheckInLifecycle())
+                .modifier(DailySlangSplash(store: dailySlang))
                 .environmentObject(store)
                 .tint(AppTheme.accent)
                 .task { await store.upgradeLegacyMeanings() }

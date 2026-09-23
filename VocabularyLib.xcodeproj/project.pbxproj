@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        AB0322222222222222222201 /* DailySlang.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0322222222222222222200; };
+        AB0322222222222222222202 /* DailySlang.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0322222222222222222200; };
         AA0222222222222222222201 /* ReviewExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0222222222222222222200; };
         AA0222222222222222222202 /* ReviewExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0222222222222222222200; };
         AA0111111111111111111104 /* StudyPlanAndSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0111111111111111111103 /* StudyPlanAndSearchTests.swift */; };
@@ -102,6 +104,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        AB0322222222222222222200 /* DailySlang.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Shared/DailySlang.swift; sourceTree = "<group>"; };
         AA0222222222222222222200 /* ReviewExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Shared/ReviewExerciseView.swift; sourceTree = "<group>"; };
         AA0111111111111111111103 /* StudyPlanAndSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyPlanAndSearchTests.swift; sourceTree = "<group>"; };
         AA0111111111111111111100 /* StudyTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Shared/StudyTools.swift; sourceTree = "<group>"; };
@@ -315,6 +318,7 @@
 				C2FFD3ABAE63A141E6E88789 /* ReviewRecord.swift */,
 				2FF24EA4A373750732FBBB95 /* WordEntry.swift */,
                 AA0111111111111111111100 /* StudyTools.swift */,
+                AB0322222222222222222200 /* DailySlang.swift */,
                 AA0222222222222222222200 /* ReviewExerciseView.swift */,
 			);
 			path = Models;
@@ -527,6 +531,7 @@
 				1BAEE0B66ABD7FB3081FCDEA /* VocabularyStore.swift in Sources */,
 				69CC6C6FC19F892C90C47EC4 /* WordEntry.swift in Sources */,
                 AA0111111111111111111101 /* StudyTools.swift in Sources */,
+                AB0322222222222222222201 /* DailySlang.swift in Sources */,
                 AA0222222222222222222201 /* ReviewExerciseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -554,6 +559,7 @@
 				53D183CFD317442A00AB0421 /* VocabularyStore.swift in Sources */,
 				88902DAF84C3F89D016B6790 /* WordEntry.swift in Sources */,
                 AA0111111111111111111102 /* StudyTools.swift in Sources */,
+                AB0322222222222222222202 /* DailySlang.swift in Sources */,
                 AA0222222222222222222202 /* ReviewExerciseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
